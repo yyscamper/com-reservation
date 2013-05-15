@@ -26,6 +26,8 @@ namespace COMReservation
         private string          m_description = "";
         private DateTime        m_expireTime;
         private ArrayList       m_waitList = new ArrayList();
+        private string          m_sessionName = "";
+        private uint m_baud;
 
         private static readonly string[] PriorityStrArr = new string[] { "Highest", "High", "Middle", "Low", "Lowest" };
 
@@ -47,6 +49,18 @@ namespace COMReservation
             m_group = group;
             m_description = description;
             m_expireTime = expireTime;
+        }
+
+        public string SessionName
+        {
+            get { return m_sessionName; }
+            set { m_sessionName = value; }
+        }
+
+        public uint Baud
+        {
+            get { return m_baud; }
+            set { m_baud = value; }
         }
 
         public uint Port
@@ -116,6 +130,49 @@ namespace COMReservation
                 }
             }
         }
+
+        public ArrayList WaitList
+        {
+            get { return m_waitList; }
+        }
+
+        public string GetWaitListString()
+        {
+            if (m_waitList.Count == 0)
+                return string.Empty;
+
+            StringBuilder strb = new StringBuilder();
+            foreach (string str in m_waitList)
+            {
+                strb.Append(str);
+                strb.Append(',');
+            }
+            strb.Remove(strb.Length - 1, 1);
+            return strb.ToString();
+        }
+
+        public bool AddWait(string userName)
+        {
+            if (m_waitList.Contains(userName) || m_waitList.Count >= 10)
+                return false;
+
+            m_waitList.Add(userName);
+
+            return true;
+        }
+
+        public bool DeleteWait(string userName)
+        {
+            if (m_waitList.Contains(userName))
+                m_waitList.Remove(userName);
+
+            return true;
+        }
+
+        public void ClearWait()
+        {
+            m_waitList.Clear();
+        }
     }
 
     static public class COMHandle
@@ -155,7 +212,7 @@ namespace COMReservation
                 return null;
         }
 
-        static void Reserve(uint port, string owner, DateTime expireTime, string description)
+        static public void Reserve(uint port, string owner, DateTime expireTime, string description)
         {
             if (owner == null || expireTime >= DateTime.Now)
             {
@@ -171,9 +228,14 @@ namespace COMReservation
             AddHistory(owner + "successfully reserve the COM" + port);
         }
 
-        static void Release(uint port, string owner)
+        static public void Release(uint port, string owner)
         {
             COMItem comItem = FindCOM(port);
+            if (comItem == null)
+                return;
+
+            comItem.Owner = "";
+            comItem.ExpireTime = DateTime.Now;
         }
 
 

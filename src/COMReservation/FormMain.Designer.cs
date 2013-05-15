@@ -38,7 +38,7 @@
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.btnRefresh);
-            this.groupBox1.Location = new System.Drawing.Point(539, 22);
+            this.groupBox1.Location = new System.Drawing.Point(539, 13);
             this.groupBox1.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Padding = new System.Windows.Forms.Padding(4);
@@ -59,7 +59,7 @@
             // 
             // tableComList
             // 
-            this.tableComList.HeaderFont = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.tableComList.HeaderFont = new System.Drawing.Font("SimSun", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.tableComList.Location = new System.Drawing.Point(10, 11);
             this.tableComList.Margin = new System.Windows.Forms.Padding(4);
             this.tableComList.Name = "tableComList";
@@ -74,7 +74,7 @@
             this.ClientSize = new System.Drawing.Size(844, 778);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.tableComList);
-            this.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.Font = new System.Drawing.Font("Microsoft YaHei", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "FormMain";
             this.Text = "COM Reservation";

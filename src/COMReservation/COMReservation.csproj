@@ -62,8 +62,10 @@
     <Compile Include="FormReserveParam.Designer.cs">
       <DependentUpon>FormReserveParam.cs</DependentUpon>
     </Compile>
+    <Compile Include="IReserveCOM.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SecureCRTHandle.cs" />
     <EmbeddedResource Include="FormMain.resx">
       <DependentUpon>FormMain.cs</DependentUpon>
     </EmbeddedResource>

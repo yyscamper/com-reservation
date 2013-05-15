@@ -19,16 +19,33 @@ namespace COMReservation
         private static string m_shortTimeFormat = "MM/dd hh:mm";
         private static string m_appConfigFilePath = "./com_reservation.xml";
 
+        static private string m_secureCrtPath = "C:\\Program Files\\SecureCRT\\SecureCRT.exe";
+        static private string m_secureCrtSessionDir = "Config/Session/";
+
         static AppConfig()
         {
             m_loginName = System.Environment.UserName;
-
+            m_secureCrtSessionDir = System.Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\VanDyke\\Config\\Sessions\\";
+            
+            
             COMHandle.Add(new COMItem(1, "YuanYu", COMPriority.HIGH, "BC_GROUP", "For random", new DateTime(2013, 5, 17, 14, 59, 0)));
             COMHandle.Add(new COMItem(2, "Leo", COMPriority.LOW, "JF_GROUP", "For Airave", new DateTime(2013, 5, 15, 23, 20, 0)));
             COMHandle.Add(new COMItem(3, "Andy", COMPriority.HIGHEST, "DV_GROUP", "For bug#1", new DateTime(2013, 5, 15, 10, 59, 0)));
             COMHandle.Add(new COMItem(4, "YuanYu", COMPriority.LOWEST, "MG_GROUP", "For thing that", new DateTime(2013, 5, 15, 23, 35, 0)));
             COMHandle.Add(new COMItem(5, "Simon", COMPriority.MIDDLE, "EV_GROUP", "For tody's work", new DateTime(2013, 5, 16, 9, 8, 0)));
             COMHandle.Add(new COMItem(6, "YuanYu", COMPriority.HIGH, "SB_GROUP", "For my personal", new DateTime(2013, 5, 20, 10, 01, 0)));
+        }
+
+        static public string SecureCRTSessionDir
+        {
+            get { return m_secureCrtSessionDir; }
+            set { m_secureCrtSessionDir = value; }
+        }
+
+        static public string SecureCRTExeFilePath
+        {
+            get { return m_secureCrtPath; }
+            set { m_secureCrtPath = value; }
         }
 
         static public uint StartPort
@@ -80,7 +97,7 @@ namespace COMReservation
                             }
                         }
                        
-                        //for (uint i = 7; i < 100; i++)
+                        //for (uint i = 1; i < 100; i++)
                         //{
                         //    COMHandle.Add(new COMItem(i));
                         //}

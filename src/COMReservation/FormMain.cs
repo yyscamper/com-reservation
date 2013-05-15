@@ -13,7 +13,7 @@ using XPTable.Models;
 
 namespace COMReservation
 {
-    public partial class FormMain : Form
+    public partial class FormMain : Form, IReserveCOM
     {
         private delegate void ThreadUpdateRemainTime();
 
@@ -31,7 +31,10 @@ namespace COMReservation
         private int COL_PRIORITY = 4;
         private int COL_GROUP = 5;
         private int COL_DESCRIPTION = 6;
-        private int COL_ACTION = 7;
+        private int COL_WAIT_LIST = 7;
+        private int COL_ACTION = 8;
+        private int COL_ADD_WAIT = 9;
+        private int COL_OPEN_SECURECRT = 10;
 
         private XPTable.Models.ColumnModel m_columnModel;
         private XPTable.Models.TableModel m_tableModel;
@@ -51,7 +54,10 @@ namespace COMReservation
             m_columnModel.Columns.Add(new TextColumn("Priority"));
             m_columnModel.Columns.Add(new TextColumn("Group"));
             m_columnModel.Columns.Add(new TextColumn("Description"));
+            m_columnModel.Columns.Add(new TextColumn("Wait List"));
             m_columnModel.Columns.Add(new ButtonColumn("Action"));
+            m_columnModel.Columns.Add(new ButtonColumn("Wait"));
+            m_columnModel.Columns.Add(new ButtonColumn("SecureCRT"));
 
             tableComList.ColumnModel = m_columnModel;
             tableComList.TableModel = m_tableModel;
@@ -63,7 +69,10 @@ namespace COMReservation
             tableComList.ColumnModel.Columns[COL_PRIORITY].Width = 60;
             tableComList.ColumnModel.Columns[COL_GROUP].Width = 120;
             tableComList.ColumnModel.Columns[COL_DESCRIPTION].Width = 240;
+            tableComList.ColumnModel.Columns[COL_WAIT_LIST].Width = 120;
             tableComList.ColumnModel.Columns[COL_ACTION].Width = 80;
+            tableComList.ColumnModel.Columns[COL_ADD_WAIT].Width = 80;
+            tableComList.ColumnModel.Columns[COL_OPEN_SECURECRT].Width = 80;
 
             m_tableModel.RowHeight = 28;
 
@@ -73,7 +82,7 @@ namespace COMReservation
                 tableWidth += tableComList.ColumnModel.Columns[i].Width;
             }
 
-            tableComList.Width = tableWidth + 4;
+            tableComList.Width = tableWidth + 28;
 
             this.groupBox1.Location = new Point(tableComList.Width + tableComList.Location.X + 10,
                         tableComList.Location.Y - 5);
@@ -150,20 +159,39 @@ namespace COMReservation
             bool isReserve = (isAvaiable || !m_loginName.Equals(owner, StringComparison.InvariantCultureIgnoreCase));
 
             Row row = new Row();
-            row.Cells.Add(new Cell("", isSelected));
-            row.Cells.Add(new Cell(port.ToString()));
-            row.Cells.Add(new Cell(owner));
-            row.Cells.Add(new Cell(remainTime));
-            row.Cells.Add(new Cell(priority));
-            row.Cells.Add(new Cell(group));
-            row.Cells.Add(new Cell(description));
-            row.Cells.Add(new Cell());
+            for (int i = 0; i < tableComList.ColumnModel.Columns.Count; i++)
+            {
+                row.Cells.Add(new Cell());
+            }
+
+            row.Cells[COL_SELECT].Checked = isSelected;
+            row.Cells[COL_PORT].Text = port.ToString();
+            row.Cells[COL_OWNER].Text = owner;
+            row.Cells[COL_REMAIN_TIME].Text = remainTime;
+            row.Cells[COL_PRIORITY].Text = priority;
+            row.Cells[COL_GROUP].Text = group;
+            row.Cells[COL_DESCRIPTION].Text = description;
+            row.Cells[COL_WAIT_LIST].Text = "yuanf, leo, andy";
+            //row.Cells[COL_ACTION].Text = port.ToString();
+            row.Cells[COL_ADD_WAIT].Text = "+Wait";
+            row.Cells[COL_OPEN_SECURECRT].Text = "Open";
 
             row.Cells[1].Editable = false;
             row.Cells[2].Editable = false; 
             row.Cells[3].Editable = false;
             row.Cells[4].Editable = false;
             row.Cells[5].Editable = false;
+
+            if (m_loginName != owner)
+            {
+                row.Cells[COL_ADD_WAIT].Enabled = true;
+                row.Cells[COL_OPEN_SECURECRT].Enabled = false;
+            }
+            else
+            {
+                row.Cells[COL_ADD_WAIT].Enabled = false;
+                row.Cells[COL_OPEN_SECURECRT].Enabled = true;
+            }
 
             if (String.IsNullOrEmpty(owner) || m_loginName.Equals(owner, StringComparison.InvariantCultureIgnoreCase))
             {
@@ -231,6 +259,13 @@ namespace COMReservation
             {
                 ActionOnCom(e.Row);
             }
+            else if (COL_OPEN_SECURECRT == e.Column)
+            {
+                uint port = uint.Parse(tableComList.TableModel.Rows[e.Row].Cells[COL_PORT].Text);
+                string sessionName = "Serial-COM" + tableComList.TableModel.Rows[e.Row].Cells[COL_PORT].Text;
+                bool   createdInTab = false;
+                SecureCRTHandle.Open(sessionName, COMHandle.FindCOM(port), createdInTab);
+            }
         }
 
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
@@ -241,6 +276,11 @@ namespace COMReservation
         private void btnRefresh_Click(object sender, EventArgs e)
         {
             RefreshCOMInfo();
+        }
+
+        public void ReserveCOMHandle(COMItem comItem, bool createInTab)
+        {
+            throw new NotImplementedException();
         }
     }
 }
