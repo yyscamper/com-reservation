@@ -18,6 +18,31 @@ namespace COMReservation
             InitializeComponent();
         }
 
+        public FormReserveParam(uint port)
+        {
+            InitializeComponent();
+            cboxCOM.Text = port.ToString();
+            cboxCOM.Enabled = false;
+        }
+
+        public FormReserveParam(string strPort)
+        {
+            InitializeComponent();
+            cboxCOM.Text = strPort;
+            cboxCOM.Enabled = false;
+        }
+
+        public FormReserveParam(COMItem item)
+        {
+            InitializeComponent();
+            cboxCOM.Text = item.Port.ToString();
+            cboxBaud.Text = item.Baud.ToString();
+            cboxSessionName.Text = "Serial-COM" + cboxCOM.Text;
+            cboxCreateInTab.Checked = false;
+            tboxDescription.Text = "";
+            cboxCOM.Enabled = false;
+        }
+
         private void label6_Click(object sender, EventArgs e)
         {
 
@@ -42,11 +67,9 @@ namespace COMReservation
             cboxBaud.Items.AddRange(arrStrBaud);
             cboxBaud.Text = "115200";
 
-            string[] arrPriority = new string[] {"High", "Normal", "Low"};
-            cboxPriority.Items.AddRange(arrPriority);
-            cboxPriority.Text = "Low";
-
             dtpExpireTime.Value = DateTime.Now + new TimeSpan(4, 0, 0);
+
+            rboxPriorityLow.Checked = true;
         }
 
         private void cboxCOM_SelectedIndexChanged(object sender, EventArgs e)
@@ -60,6 +83,10 @@ namespace COMReservation
             cboxSessionName.Items.Add("COM" + cboxCOM.Text + "-Diag");
             cboxSessionName.Items.Add("COM" + cboxCOM.Text + "-OS");
             m_bComSelected = true;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
         }
     }
 }
