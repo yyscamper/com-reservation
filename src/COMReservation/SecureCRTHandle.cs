@@ -13,7 +13,7 @@ namespace COMReservation
         {
             string cmdArg = ( createInTab ? "/T " : "" ) + " /S " + strSessionName;
 
-            if (!File.Exists(AppConfig.SecureCRTSessionDir + strSessionName + ".ini"))
+            if (!File.Exists(AppConfig.SecureCRTSessionDir + "\\" + strSessionName + ".ini"))
             {
                 try
                 {
@@ -37,7 +37,7 @@ namespace COMReservation
 
         static private void CreateSessionFile(string strSession, COMItem com)
         {
-            string filePath = AppConfig.SecureCRTSessionDir + strSession + ".ini";
+            string filePath = AppConfig.SecureCRTSessionDir + "\\" + strSession + ".ini";
             if (File.Exists(filePath))
             {
                 return;
@@ -58,6 +58,15 @@ namespace COMReservation
             strb.Append("S:\"Com Port\"=COM" + com.Port.ToString() + "\n");
             strb.Append("D:\"Serial Break Length\"=00000064\n");
             strb.Append("D:\"Serial Driver Bug Mask\"=00000000\n");
+            if (AppConfig.LogFilePath.Trim() != null)
+            {
+                strb.Append("S:\"Log Filename\"=" + AppConfig.LogFilePath + "\n");
+            }
+
+            if (AppConfig.LogLineFormat.Trim() != null)
+            {
+                strb.Append("S:\"Custom Log Message Each Line\"=" + AppConfig.LogLineFormat + "\n");
+            }
 
             try
             {

@@ -5,16 +5,16 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Xml;
+using XPTable.Models;
+using System.Windows.Forms;
 
 namespace COMReservation
 {
     public enum COMPriority: int
     {
-        HIGHEST = 0,
-        HIGH    = 1,
-        MIDDLE  = 2,
-        LOW     = 3,
-        LOWEST  = 4
+        HIGH    = 0,
+        MIDDLE  = 1,
+        LOW     = 2
     }
 
     public class COMItem
@@ -27,9 +27,10 @@ namespace COMReservation
         private DateTime        m_expireTime;
         private ArrayList       m_waitList = new ArrayList();
         private string          m_sessionName = "";
-        private uint m_baud;
+        private uint            m_baud = 115200;
+        private ListViewItem    m_rowInTable = null;
 
-        private static readonly string[] PriorityStrArr = new string[] { "Highest", "High", "Middle", "Low", "Lowest" };
+        private static readonly string[] PriorityStrArr = new string[] {"High", "Middle", "Low"};
 
         public COMItem()
         {
@@ -49,6 +50,12 @@ namespace COMReservation
             m_group = group;
             m_description = description;
             m_expireTime = expireTime;
+        }
+
+        public ListViewItem RowInTable
+        {
+            get { return m_rowInTable; }
+            set { m_rowInTable = value; }
         }
 
         public string SessionName
@@ -115,6 +122,11 @@ namespace COMReservation
             }
         }
 
+        public bool IsAvaiable()
+        {
+            return (m_owner == null || m_owner.Trim().Length == 0);
+        }
+
         public string StrRemainTime
         {
             get 
@@ -131,9 +143,17 @@ namespace COMReservation
             }
         }
 
-        public ArrayList WaitList
+        public string WaitListString
         {
-            get { return m_waitList; }
+            get { return GetWaitListString(); }
+            set
+            {
+                string[] strArr = value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (string str in strArr)
+                {
+                    m_waitList.Add(str);
+                }
+            }
         }
 
         public string GetWaitListString()
@@ -161,6 +181,11 @@ namespace COMReservation
             return true;
         }
 
+        public bool ContainsWait(string userName)
+        {
+            return m_waitList.Contains(userName);
+        }
+
         public bool DeleteWait(string userName)
         {
             if (m_waitList.Contains(userName))
@@ -173,15 +198,20 @@ namespace COMReservation
         {
             m_waitList.Clear();
         }
+
+        public bool ContainWait(string name)
+        {
+            return m_waitList.Contains(name);
+        }
     }
 
     static public class COMHandle
     {
-        private static Hashtable m_allCOMs = new Hashtable();
+        private static SortedList m_allCOMs = new SortedList();
         private static string m_dataFilePath = "com_reservation_data.xml";
         private static string m_historyFilePath = "com_reservation_history.xml";
 
-        static public Hashtable AllCOMs
+        static public SortedList AllCOMs
         {
             get { return m_allCOMs; }
         }
@@ -214,7 +244,7 @@ namespace COMReservation
 
         static public void Reserve(uint port, string owner, DateTime expireTime, string description)
         {
-            if (owner == null || expireTime >= DateTime.Now)
+            if (owner == null || expireTime <= DateTime.Now)
             {
                 return;
             }
@@ -226,6 +256,8 @@ namespace COMReservation
             comItem.ExpireTime = expireTime;
             comItem.Description = description;
             AddHistory(owner + "successfully reserve the COM" + port);
+
+            AppConfig.SaveComInfo();
         }
 
         static public void Release(uint port, string owner)
@@ -236,6 +268,7 @@ namespace COMReservation
 
             comItem.Owner = "";
             comItem.ExpireTime = DateTime.Now;
+            AppConfig.SaveComInfo();
         }
 
 
