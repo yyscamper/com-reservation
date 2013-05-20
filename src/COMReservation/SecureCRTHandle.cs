@@ -9,7 +9,14 @@ namespace COMReservation
 {
     public static class SecureCRTHandle
     {
-        public static void Open(string strSessionName, COMItem com, bool createInTab)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="strSessionName"></param>
+        /// <param name="com"></param>
+        /// <param name="createInTab"></param>
+        /// <returns> The process ID</returns>
+        public static int Open(string strSessionName, COMItem com, bool createInTab)
         {
             string cmdArg = ( createInTab ? "/T " : "" ) + " /S " + strSessionName;
 
@@ -33,6 +40,10 @@ namespace COMReservation
             process.StartInfo.RedirectStandardError = true;
             process.StartInfo.CreateNoWindow = true;
             process.Start();
+
+            com.ProcessId = process.Id;
+            AppConfig.SaveComInfo();
+            return process.Id;
         }
 
         static private void CreateSessionFile(string strSession, COMItem com)

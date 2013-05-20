@@ -41,7 +41,7 @@
             this.label7 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.cboxActionScripts = new System.Windows.Forms.ComboBox();
-            this.btnOpen = new System.Windows.Forms.Button();
+            this.btnActionSecureCRT = new System.Windows.Forms.Button();
             this.label11 = new System.Windows.Forms.Label();
             this.cboxBaud = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -55,12 +55,10 @@
             this.label2 = new System.Windows.Forms.Label();
             this.lableLogFilePathHelp = new System.Windows.Forms.Label();
             this.groupActionButton = new System.Windows.Forms.GroupBox();
-            this.btnDeleteWait = new System.Windows.Forms.Button();
-            this.btnAddWait = new System.Windows.Forms.Button();
+            this.btnActionWait = new System.Windows.Forms.Button();
             this.groupFilter = new System.Windows.Forms.GroupBox();
-            this.rbtnReservedByMe = new System.Windows.Forms.RadioButton();
-            this.rbtnAvaiable = new System.Windows.Forms.RadioButton();
-            this.rbtnAll = new System.Windows.Forms.RadioButton();
+            this.cboxFilter = new System.Windows.Forms.ComboBox();
+            this.labelFilter = new System.Windows.Forms.Label();
             this.btnSetting = new System.Windows.Forms.Button();
             this.ctxMenuLogHelp = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -71,8 +69,7 @@
             this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem7 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem8 = new System.Windows.Forms.ToolStripMenuItem();
-            this.btnEdit = new System.Windows.Forms.Button();
-            this.listViewComTable = new System.Windows.Forms.ListView();
+            this.btnActionEditSave = new System.Windows.Forms.Button();
             this.groupCOMDetail.SuspendLayout();
             this.groupActionButton.SuspendLayout();
             this.groupFilter.SuspendLayout();
@@ -199,16 +196,16 @@
             this.cboxActionScripts.TabIndex = 1;
             this.cboxActionScripts.Text = "EnterPOST.vbs";
             // 
-            // btnOpen
+            // btnActionSecureCRT
             // 
-            this.btnOpen.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnOpen.Location = new System.Drawing.Point(142, 52);
-            this.btnOpen.Name = "btnOpen";
-            this.btnOpen.Size = new System.Drawing.Size(130, 33);
-            this.btnOpen.TabIndex = 4;
-            this.btnOpen.Text = "Open SecureCRT";
-            this.btnOpen.UseVisualStyleBackColor = true;
-            this.btnOpen.Click += new System.EventHandler(this.btnOpen_Click);
+            this.btnActionSecureCRT.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnActionSecureCRT.Location = new System.Drawing.Point(142, 52);
+            this.btnActionSecureCRT.Name = "btnActionSecureCRT";
+            this.btnActionSecureCRT.Size = new System.Drawing.Size(130, 33);
+            this.btnActionSecureCRT.TabIndex = 4;
+            this.btnActionSecureCRT.Text = "Open SecureCRT";
+            this.btnActionSecureCRT.UseVisualStyleBackColor = true;
+            this.btnActionSecureCRT.Click += new System.EventHandler(this.btnOpen_Click);
             // 
             // label11
             // 
@@ -228,6 +225,7 @@
             this.cboxBaud.Name = "cboxBaud";
             this.cboxBaud.Size = new System.Drawing.Size(155, 25);
             this.cboxBaud.TabIndex = 1;
+            this.cboxBaud.SelectedIndexChanged += new System.EventHandler(this.cboxBaud_SelectedIndexChanged);
             // 
             // label4
             // 
@@ -352,84 +350,54 @@
             // 
             // groupActionButton
             // 
-            this.groupActionButton.Controls.Add(this.btnDeleteWait);
-            this.groupActionButton.Controls.Add(this.btnAddWait);
+            this.groupActionButton.Controls.Add(this.btnActionWait);
             this.groupActionButton.Controls.Add(this.btnReserve);
-            this.groupActionButton.Controls.Add(this.btnOpen);
+            this.groupActionButton.Controls.Add(this.btnActionSecureCRT);
             this.groupActionButton.Location = new System.Drawing.Point(538, 447);
             this.groupActionButton.Name = "groupActionButton";
-            this.groupActionButton.Size = new System.Drawing.Size(278, 91);
+            this.groupActionButton.Size = new System.Drawing.Size(278, 212);
             this.groupActionButton.TabIndex = 6;
             this.groupActionButton.TabStop = false;
             // 
-            // btnDeleteWait
+            // btnActionWait
             // 
-            this.btnDeleteWait.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnDeleteWait.Location = new System.Drawing.Point(7, 12);
-            this.btnDeleteWait.Name = "btnDeleteWait";
-            this.btnDeleteWait.Size = new System.Drawing.Size(129, 33);
-            this.btnDeleteWait.TabIndex = 5;
-            this.btnDeleteWait.Text = "-Wait";
-            this.btnDeleteWait.UseVisualStyleBackColor = true;
-            this.btnDeleteWait.Click += new System.EventHandler(this.btnDeleteWait_Click);
-            // 
-            // btnAddWait
-            // 
-            this.btnAddWait.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnAddWait.Location = new System.Drawing.Point(8, 51);
-            this.btnAddWait.Name = "btnAddWait";
-            this.btnAddWait.Size = new System.Drawing.Size(129, 33);
-            this.btnAddWait.TabIndex = 5;
-            this.btnAddWait.Text = "+Wait";
-            this.btnAddWait.UseVisualStyleBackColor = true;
-            this.btnAddWait.Click += new System.EventHandler(this.btnAddWait_Click);
+            this.btnActionWait.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnActionWait.Location = new System.Drawing.Point(7, 12);
+            this.btnActionWait.Name = "btnActionWait";
+            this.btnActionWait.Size = new System.Drawing.Size(129, 33);
+            this.btnActionWait.TabIndex = 5;
+            this.btnActionWait.Text = "+Wait";
+            this.btnActionWait.UseVisualStyleBackColor = true;
+            this.btnActionWait.Click += new System.EventHandler(this.btnActionWait_Click);
             // 
             // groupFilter
             // 
-            this.groupFilter.Controls.Add(this.rbtnReservedByMe);
-            this.groupFilter.Controls.Add(this.rbtnAvaiable);
-            this.groupFilter.Controls.Add(this.rbtnAll);
-            this.groupFilter.Location = new System.Drawing.Point(192, 5);
+            this.groupFilter.Controls.Add(this.cboxFilter);
+            this.groupFilter.Controls.Add(this.labelFilter);
+            this.groupFilter.Location = new System.Drawing.Point(244, 5);
             this.groupFilter.Name = "groupFilter";
-            this.groupFilter.Size = new System.Drawing.Size(259, 39);
+            this.groupFilter.Size = new System.Drawing.Size(218, 42);
             this.groupFilter.TabIndex = 7;
             this.groupFilter.TabStop = false;
             // 
-            // rbtnReservedByMe
+            // cboxFilter
             // 
-            this.rbtnReservedByMe.AutoSize = true;
-            this.rbtnReservedByMe.Location = new System.Drawing.Point(130, 12);
-            this.rbtnReservedByMe.Name = "rbtnReservedByMe";
-            this.rbtnReservedByMe.Size = new System.Drawing.Size(121, 21);
-            this.rbtnReservedByMe.TabIndex = 0;
-            this.rbtnReservedByMe.TabStop = true;
-            this.rbtnReservedByMe.Text = "Reserved by Me";
-            this.rbtnReservedByMe.UseVisualStyleBackColor = true;
-            this.rbtnReservedByMe.CheckedChanged += new System.EventHandler(this.rbtnFilter_CheckedChanged);
+            this.cboxFilter.FormattingEnabled = true;
+            this.cboxFilter.Location = new System.Drawing.Point(42, 12);
+            this.cboxFilter.Name = "cboxFilter";
+            this.cboxFilter.Size = new System.Drawing.Size(170, 25);
+            this.cboxFilter.TabIndex = 9;
+            this.cboxFilter.SelectedIndexChanged += new System.EventHandler(this.cboxFilter_SelectedIndexChanged);
             // 
-            // rbtnAvaiable
+            // labelFilter
             // 
-            this.rbtnAvaiable.AutoSize = true;
-            this.rbtnAvaiable.Location = new System.Drawing.Point(54, 12);
-            this.rbtnAvaiable.Name = "rbtnAvaiable";
-            this.rbtnAvaiable.Size = new System.Drawing.Size(75, 21);
-            this.rbtnAvaiable.TabIndex = 0;
-            this.rbtnAvaiable.TabStop = true;
-            this.rbtnAvaiable.Text = "Avaiable";
-            this.rbtnAvaiable.UseVisualStyleBackColor = true;
-            this.rbtnAvaiable.CheckedChanged += new System.EventHandler(this.rbtnFilter_CheckedChanged);
-            // 
-            // rbtnAll
-            // 
-            this.rbtnAll.AutoSize = true;
-            this.rbtnAll.Location = new System.Drawing.Point(8, 12);
-            this.rbtnAll.Name = "rbtnAll";
-            this.rbtnAll.Size = new System.Drawing.Size(40, 21);
-            this.rbtnAll.TabIndex = 0;
-            this.rbtnAll.TabStop = true;
-            this.rbtnAll.Text = "All";
-            this.rbtnAll.UseVisualStyleBackColor = true;
-            this.rbtnAll.CheckedChanged += new System.EventHandler(this.rbtnFilter_CheckedChanged);
+            this.labelFilter.AutoSize = true;
+            this.labelFilter.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.labelFilter.Location = new System.Drawing.Point(5, 14);
+            this.labelFilter.Name = "labelFilter";
+            this.labelFilter.Size = new System.Drawing.Size(39, 17);
+            this.labelFilter.TabIndex = 0;
+            this.labelFilter.Text = "Filter:";
             // 
             // btnSetting
             // 
@@ -504,37 +472,23 @@
             this.toolStripMenuItem8.Size = new System.Drawing.Size(243, 22);
             this.toolStripMenuItem8.Text = "%% - percent (%)";
             // 
-            // btnEdit
+            // btnActionEditSave
             // 
-            this.btnEdit.Location = new System.Drawing.Point(778, 14);
-            this.btnEdit.Margin = new System.Windows.Forms.Padding(4);
-            this.btnEdit.Name = "btnEdit";
-            this.btnEdit.Size = new System.Drawing.Size(40, 33);
-            this.btnEdit.TabIndex = 0;
-            this.btnEdit.Text = "Edit";
-            this.btnEdit.UseVisualStyleBackColor = true;
-            this.btnEdit.Click += new System.EventHandler(this.btnEdit_Click);
-            // 
-            // listViewComTable
-            // 
-            this.listViewComTable.FullRowSelect = true;
-            this.listViewComTable.Location = new System.Drawing.Point(10, 51);
-            this.listViewComTable.MultiSelect = false;
-            this.listViewComTable.Name = "listViewComTable";
-            this.listViewComTable.Size = new System.Drawing.Size(520, 487);
-            this.listViewComTable.TabIndex = 8;
-            this.listViewComTable.UseCompatibleStateImageBehavior = false;
-            this.listViewComTable.View = System.Windows.Forms.View.Details;
-            this.listViewComTable.SelectedIndexChanged += new System.EventHandler(this.listViewComTable_SelectedIndexChanged);
-            this.listViewComTable.MouseClick += new System.Windows.Forms.MouseEventHandler(this.listViewComTable_MouseClick);
+            this.btnActionEditSave.Location = new System.Drawing.Point(778, 14);
+            this.btnActionEditSave.Margin = new System.Windows.Forms.Padding(4);
+            this.btnActionEditSave.Name = "btnActionEditSave";
+            this.btnActionEditSave.Size = new System.Drawing.Size(40, 33);
+            this.btnActionEditSave.TabIndex = 0;
+            this.btnActionEditSave.Text = "Edit";
+            this.btnActionEditSave.UseVisualStyleBackColor = true;
+            this.btnActionEditSave.Click += new System.EventHandler(this.btnEdit_Click);
             // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(823, 546);
-            this.Controls.Add(this.listViewComTable);
-            this.Controls.Add(this.btnEdit);
+            this.ClientSize = new System.Drawing.Size(834, 671);
+            this.Controls.Add(this.btnActionEditSave);
             this.Controls.Add(this.btnSetting);
             this.Controls.Add(this.btnRefresh);
             this.Controls.Add(this.groupFilter);
@@ -545,7 +499,7 @@
             this.Name = "FormMain";
             this.Text = "COM Reservation";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormMain_FormClosing);
-            this.Load += new System.EventHandler(this.Form1_Load);
+            this.Load += new System.EventHandler(this.FormMain_Load);
             this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.FormMain_MouseClick);
             this.Resize += new System.EventHandler(this.FormMain_Resize);
             this.groupCOMDetail.ResumeLayout(false);
@@ -572,7 +526,7 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.ComboBox cboxActionScripts;
-        private System.Windows.Forms.Button btnOpen;
+        private System.Windows.Forms.Button btnActionSecureCRT;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.ComboBox cboxBaud;
         private System.Windows.Forms.Label label4;
@@ -585,11 +539,7 @@
         private System.Windows.Forms.GroupBox groupCOMDetail;
         private System.Windows.Forms.GroupBox groupActionButton;
         private System.Windows.Forms.GroupBox groupFilter;
-        private System.Windows.Forms.RadioButton rbtnReservedByMe;
-        private System.Windows.Forms.RadioButton rbtnAvaiable;
-        private System.Windows.Forms.RadioButton rbtnAll;
         private System.Windows.Forms.Button btnSetting;
-        private System.Windows.Forms.Button btnAddWait;
         private System.Windows.Forms.ContextMenuStrip ctxMenuLogHelp;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
@@ -601,9 +551,11 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem8;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label lableLogFilePathHelp;
-        private System.Windows.Forms.Button btnDeleteWait;
-        private System.Windows.Forms.Button btnEdit;
-        private System.Windows.Forms.ListView listViewComTable;
+        private System.Windows.Forms.Button btnActionWait;
+        private System.Windows.Forms.Button btnActionEditSave;
+        //private System.Windows.Forms.ListView listViewComTable;
+        private System.Windows.Forms.ComboBox cboxFilter;
+        private System.Windows.Forms.Label labelFilter;
     }
 }
 

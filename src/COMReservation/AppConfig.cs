@@ -197,8 +197,11 @@ namespace COMReservation
                                 comItem.Priority = (COMPriority)int.Parse(comNode.GetAttribute("priority"));
                                 comItem.Description = comNode.GetAttribute("description");
                                 comItem.WaitListString = comNode.GetAttribute("wait_list");
-                                comItem.ExpireTime = DateTime.ParseExact(comNode.GetAttribute("expire_time"),
+                                if (comNode.HasAttribute("expire_time"))
+                                    comItem.ExpireTime = DateTime.ParseExact(comNode.GetAttribute("expire_time"),
                                                             m_longTimeFormat, null, System.Globalization.DateTimeStyles.AllowInnerWhite);
+                                if (comNode.HasAttribute("process_id"))
+                                    comItem.ProcessId = int.Parse(comNode.GetAttribute("process_id"));
                                 COMHandle.Add(comItem);
                             }
                             catch
@@ -254,6 +257,7 @@ namespace COMReservation
                 node.SetAttribute("expire_time", comItem.ExpireTime.ToString(m_longTimeFormat));
                 node.SetAttribute("description", comItem.Description);
                 node.SetAttribute("wait_list", comItem.WaitListString);
+                node.SetAttribute("process_id", comItem.ProcessId.ToString());
                 comNode.AppendChild(node);
             }
 

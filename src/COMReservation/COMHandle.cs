@@ -7,6 +7,7 @@ using System.IO;
 using System.Xml;
 using XPTable.Models;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace COMReservation
 {
@@ -28,7 +29,16 @@ namespace COMReservation
         private ArrayList       m_waitList = new ArrayList();
         private string          m_sessionName = "";
         private uint            m_baud = 115200;
+
+#if USE_XPTABLE
+        private Row             m_rowInTable = null;
+#else
         private ListViewItem    m_rowInTable = null;
+#endif
+        private int m_processId = PROCESS_ID_INVALID;
+        private string          m_strBaud = "115200";
+
+        public static readonly  int PROCESS_ID_INVALID = -1;
 
         private static readonly string[] PriorityStrArr = new string[] {"High", "Middle", "Low"};
 
@@ -51,8 +61,11 @@ namespace COMReservation
             m_description = description;
             m_expireTime = expireTime;
         }
-
+#if USE_XPTABLE
+        public Row RowInTable
+#else
         public ListViewItem RowInTable
+#endif
         {
             get { return m_rowInTable; }
             set { m_rowInTable = value; }
@@ -67,7 +80,13 @@ namespace COMReservation
         public uint Baud
         {
             get { return m_baud; }
-            set { m_baud = value; }
+            set { m_baud = value; m_strBaud = value.ToString(); }
+        }
+
+        public string StrBaud
+        {
+            get { return m_strBaud; }
+            set { m_strBaud = value; m_baud = uint.Parse(m_strBaud); }
         }
 
         public uint Port
@@ -111,6 +130,59 @@ namespace COMReservation
             set { m_expireTime = value; }
         }
 
+        public Process SecureCrtProcess
+        {
+            get 
+            {
+                if (m_processId <= PROCESS_ID_INVALID)
+                {
+                    return null;
+                }
+                try
+                {
+                    return Process.GetProcessById(m_processId);
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+        }
+
+
+        public int ProcessId
+        {
+            get { return m_processId; }
+            set { m_processId = value; }
+        }
+
+        public int ThreadCount
+        {
+            get
+            {
+                
+                Process proc = this.SecureCrtProcess;
+                return (proc != null ? proc.Threads.Count : 0);
+            }
+        }
+
+        public bool IsRunning
+        {
+            get { return (m_processId >= 0); }
+        }
+
+        public string ProcessInfo
+        {
+            get
+            {
+                Process proc = this.SecureCrtProcess;
+                if (proc == null)
+                    return "";
+                else
+                    return proc.Id.ToString() + "(" + proc.Threads.Count.ToString() + ")";
+            }
+        }
+
         public TimeSpan RemainTime
         {
             get 
@@ -133,7 +205,7 @@ namespace COMReservation
             { 
                 if (DateTime.Now >= m_expireTime)
                 {
-                    return "0 00:00:00";
+                    return "00 00:00:00";
                 }
                 else
                 {
@@ -203,6 +275,15 @@ namespace COMReservation
         {
             return m_waitList.Contains(name);
         }
+
+        public bool CheckIllegal()
+        {
+            if (this.ThreadCount >= 18)
+            {
+                return true;
+            }
+            return false;
+        }
     }
 
     static public class COMHandle
@@ -226,6 +307,17 @@ namespace COMReservation
             if (comItem != null && !m_allCOMs.ContainsKey(comItem.Port))
             {
                 m_allCOMs.Add(comItem.Port, comItem);
+            }
+        }
+
+        static public void KillProcess(COMItem item)
+        {
+            if (item != null)
+            {
+                Process proc = item.SecureCrtProcess;
+                if (proc != null)
+                    proc.Kill();
+                item.ProcessId = COMItem.PROCESS_ID_INVALID;
             }
         }
 
@@ -268,6 +360,7 @@ namespace COMReservation
 
             comItem.Owner = "";
             comItem.ExpireTime = DateTime.Now;
+            comItem.ProcessId = COMItem.PROCESS_ID_INVALID;
             AppConfig.SaveComInfo();
         }
 
