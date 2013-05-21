@@ -168,7 +168,7 @@ namespace COMReservation
         {
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.FileName = tboxGlobalSecureCRTExeFilePath.Text;
-            ofd.Filter = "*.exe";
+            //ofd.Filter = "*.exe";
             if (DialogResult.OK != ofd.ShowDialog())
             {
                 return;

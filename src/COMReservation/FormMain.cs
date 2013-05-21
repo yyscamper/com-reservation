@@ -558,10 +558,16 @@ namespace COMReservation
             if (btn.Text == Properties.Resources.strActionReserve)
             {
                 COMHandle.Reserve(port, AppConfig.LoginUserName, dtpExpireTime.Value, tboxDescription.Text);
+                btnActionWait.Enabled = false;
+                btnActionSecureCRT.Enabled = true;
+                btnActionSecureCRT.Text = Properties.Resources.strActionSecureCrtOpen;
             }
             else
             {
                 COMHandle.Release(port, AppConfig.LoginUserName);
+                btnActionWait.Enabled = true;
+                btnActionWait.Text = Properties.Resources.strActionWaitAdd;
+                btnActionSecureCRT.Enabled = false;
             }
 
             AppConfig.SaveComInfo();
@@ -591,16 +597,32 @@ namespace COMReservation
             COMItem item = COMHandle.FindCOM(uint.Parse(cboxCOM.Text));
             if (btn.Text == Properties.Resources.strActionSecureCrtOpen)
             {
-                SecureCRTHandle.Open(cboxSessionName.Text, item, cboxCreateInTab.Checked);
-                if (item.ProcessId >= 0)
+                try
+                {
+                    SecureCRTHandle.Open(cboxSessionName.Text, item, cboxCreateInTab.Checked);
+                }
+                catch (Exception err)
+                {
+                    MessageBox.Show(err.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                if (item.SecureCrtProcess != null)
                     btn.Text = Properties.Resources.strActionSecureCrtKill;
             }
             else
             {
                 try
                 {
-                    COMHandle.KillProcess(item);
-                    if (item.ProcessId < 0)
+                    try
+                    {
+                        COMHandle.KillProcess(item);
+                    }
+                    catch (Exception err)
+                    {
+                        MessageBox.Show(err.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+                    if (item.SecureCrtProcess == null)
                         btn.Text = Properties.Resources.strActionSecureCrtOpen;
                 }
                 catch
@@ -694,7 +716,22 @@ namespace COMReservation
             groupActionButton.Enabled = groupCOMDetail.Enabled = true;
 
             cboxCOM.Text = item.Port.ToString();
+            cboxCOM.Enabled = false;
             cboxBaud.Text = item.Baud.ToString();
+            cboxSessionName.Items.AddRange(new string[] {
+                "Serial-COM" + item.Port,
+                "COM" + item.Port,
+                AppConfig.LoginUserName + "-COM" + item.Port,
+                "BMC-COM" + item.Port,
+                "BIOS-COM" + item.Port,
+                "POST-COM" + item.Port,
+                "SSP-COM" + item.Port,
+                "COM" + item.Port + "-BMC",
+                "COM" + item.Port + "-BIOS",
+                "COM" + item.Port + "-POST",
+                "COM" + item.Port + "-SSP",
+                "COM" + item.Port + "-" + AppConfig.LoginUserName
+            });
             cboxSessionName.Text = "Serial-COM" + item.Port;
             dtpExpireTime.Value = DateTime.Now + new TimeSpan(4, 0, 0);
 
@@ -705,6 +742,7 @@ namespace COMReservation
                 btnActionSecureCRT.Enabled = true;
                 groupCOMDetail.Enabled = false;
                 btnActionEditSave.Enabled = true;
+                btnActionWait.Enabled = false;
             }
             else
             {
@@ -713,6 +751,11 @@ namespace COMReservation
                 btnActionSecureCRT.Enabled = false;
                 groupCOMDetail.Enabled = true;
                 btnActionEditSave.Enabled = false;
+                btnActionWait.Enabled = true;
+                if (m_currCOMIem.ContainsWait(AppConfig.LoginUserName))
+                    btnActionWait.Text = Properties.Resources.strActionWaitRemove;
+                else
+                    btnActionWait.Text = Properties.Resources.strActionWaitAdd;
             }
         }
         private void listViewComTable_SelectedIndexChanged(object sender, EventArgs e)
@@ -783,9 +826,16 @@ namespace COMReservation
         }
 
         private void xpTable_CellClick(object sender, XPTable.Events.CellMouseEventArgs e)
-        {
+        {     
+            if (m_xpTable.SelectedIndicies.Length <= 0)
+                return;
+            int selIndex = m_xpTable.SelectedIndicies[0];
             COMItem comItem = GetCOMItem(e.Row);
             OnSelectCom(comItem);
+            CellPos startCellPos = new CellPos(selIndex, 0);
+            CellPos endCellPos = new CellPos(selIndex, m_xpColumnModel.Columns.Count - 1);
+
+            m_xpTableModel.Selections.SelectCells(startCellPos, endCellPos);
         }
     }
 }

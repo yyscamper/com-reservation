@@ -18,6 +18,10 @@ namespace COMReservation
         /// <returns> The process ID</returns>
         public static int Open(string strSessionName, COMItem com, bool createInTab)
         {
+            if (!File.Exists(AppConfig.SecureCRTExeFilePath))
+            {
+                throw new Exception("Cannot find the SecureCRT.exe."); 
+            }
             string cmdArg = ( createInTab ? "/T " : "" ) + " /S " + strSessionName;
 
             if (!File.Exists(AppConfig.SecureCRTSessionDir + "\\" + strSessionName + ".ini"))
