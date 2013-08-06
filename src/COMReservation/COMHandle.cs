@@ -29,6 +29,7 @@ namespace COMReservation
         private ArrayList       m_waitList = new ArrayList();
         private string          m_sessionName = "";
         private uint            m_baud = 115200;
+        private int             m_index = 0;
 
 #if USE_XPTABLE
         private Row             m_rowInTable = null;
@@ -60,6 +61,12 @@ namespace COMReservation
             m_group = group;
             m_description = description;
             m_expireTime = expireTime;
+        }
+
+        public int Index
+        {
+            get { return m_index; }
+            set { m_index = value; }
         }
 #if USE_XPTABLE
         public Row RowInTable
@@ -140,7 +147,12 @@ namespace COMReservation
                 }
                 try
                 {
-                    return Process.GetProcessById(m_processId);
+                    Process proc = Process.GetProcessById(m_processId);
+                    if (proc.ProcessName.Contains("SecureCRT"))
+                    {
+                        return proc;
+                    }
+                    return null;
                 }
                 catch
                 {
@@ -153,7 +165,29 @@ namespace COMReservation
         public int ProcessId
         {
             get { return m_processId; }
-            set { m_processId = value; }
+            set 
+            {
+                int procId = value;
+                try
+                {
+                    if (procId <= PROCESS_ID_INVALID)
+                        return;
+
+                    Process proc = Process.GetProcessById(procId);
+                    if (proc.ProcessName.Contains("SecureCRT"))
+                    {
+                        m_processId = value;
+                    }
+                    else
+                    {
+                        m_processId = PROCESS_ID_INVALID;
+                    }
+                }
+                catch
+                {
+                    m_processId = PROCESS_ID_INVALID;
+                }
+            }
         }
 
         public int ThreadCount
@@ -168,7 +202,7 @@ namespace COMReservation
 
         public bool IsRunning
         {
-            get { return (m_processId >= 0); }
+            get { return (this.SecureCrtProcess != null); }
         }
 
         public string ProcessInfo
@@ -179,7 +213,7 @@ namespace COMReservation
                 if (proc == null)
                     return "";
                 else
-                    return proc.Id.ToString() + "(" + proc.Threads.Count.ToString() + ")";
+                    return proc.ProcessName + " " +  proc.Id.ToString() + "(" + proc.Threads.Count.ToString() + ")";
             }
         }
 
@@ -206,6 +240,7 @@ namespace COMReservation
                 if (DateTime.Now >= m_expireTime)
                 {
                     return "00 00:00:00";
+                    //return "";
                 }
                 else
                 {
@@ -213,6 +248,11 @@ namespace COMReservation
                     return String.Format("{0:D2} {1:D2}:{2:D2}:{3:D2}", ts.Days, ts.Hours, ts.Minutes, ts.Seconds);
                 }
             }
+        }
+
+        public bool IsExpired
+        {
+            get { return (m_expireTime <= DateTime.Now); }
         }
 
         public string WaitListString
@@ -278,7 +318,7 @@ namespace COMReservation
 
         public bool CheckIllegal()
         {
-            if (this.ThreadCount >= 18)
+            if (this.ThreadCount >= 18 || (this.IsExpired && this.IsRunning))
             {
                 return true;
             }
@@ -288,13 +328,61 @@ namespace COMReservation
 
     static public class COMHandle
     {
-        private static SortedList m_allCOMs = new SortedList();
+        private static SortedList<uint, COMItem> m_allCOMs = new SortedList<uint, COMItem>();
         private static string m_dataFilePath = "com_reservation_data.xml";
         private static string m_historyFilePath = "com_reservation_history.xml";
+        /*
+        private static SortedList<uint, COMItem> m_avaiableComs = new SortedList<uint, COMItem>();
+        private static SortedList<uint, COMItem> m_illegalComs = new SortedList<uint, COMItem>();
+        private static SortedList<uint, COMItem> m_reservedByMeComs = new SortedList<uint,COMItem>();
+        private static SortedList<uint, COMItem> m_reservedByOtherComs = new SortedList<uint, COMItem>();
+        private static SortedList<uint, COMItem> m_expiredComs = new SortedList<uint, COMItem>();
+        private static SortedList<uint, COMItem> m_runningComs = new SortedList<uint, COMItem>();
+        */
 
-        static public SortedList AllCOMs
+        static public SortedList<uint, COMItem> AllCOMs
         {
             get { return m_allCOMs; }
+        }
+
+        static public int TotalNumOfPorts
+        {
+            get { return m_allCOMs.Count; }
+        }
+
+        static public int TotalNumberOfMyReserved
+        {
+            get
+            {
+                int cnt = 0;
+                foreach (COMItem item in m_allCOMs.Values)
+                {
+                    if (item.Owner == AppConfig.LoginUserName)
+                    {
+                        cnt++;
+                    }
+                }
+
+                return cnt;
+            }
+        }
+
+        static public COMItem ItemAt(int index)
+        {
+            if (index < 0 || index >= m_allCOMs.Count)
+            {
+                return null;
+            }
+            return (COMItem)(m_allCOMs[(uint)index]);
+        }
+
+        static public void Remove(uint port)
+        {
+            if (!m_allCOMs.ContainsKey(port))
+            {
+                return;
+            }
+            m_allCOMs.Remove(port);
         }
 
         static public void Clear()
@@ -347,7 +435,7 @@ namespace COMReservation
             comItem.Owner = owner;
             comItem.ExpireTime = expireTime;
             comItem.Description = description;
-            AddHistory(owner + "successfully reserve the COM" + port);
+            HistoryWritter.Write(" successfully reserve the COM" + port + ".");
 
             AppConfig.SaveComInfo();
         }
@@ -361,31 +449,53 @@ namespace COMReservation
             comItem.Owner = "";
             comItem.ExpireTime = DateTime.Now;
             comItem.ProcessId = COMItem.PROCESS_ID_INVALID;
+            HistoryWritter.Write("released the COM" + port + ".");
             AppConfig.SaveComInfo();
         }
 
-
-        static void AddHistory(string message)
+        static public void ReleaseAllReservedByMe()
         {
-            DateTime t = DateTime.Now;
-            FileStream historyFile = null;
+            HistoryWritter.Write("try to release all COMs that reserved by me.");
             try
             {
-                historyFile = File.Open(m_historyFilePath, FileMode.Append, FileAccess.Write);
-                StringBuilder strb = new StringBuilder();
-                strb.Append(t.ToLocalTime());
-                strb.Append("  ");
-                strb.Append(message);
-                strb.Append("\n");
-
-                historyFile.Write(new UTF8Encoding().GetBytes(strb.ToString()), 0, strb.Length);
-
-                historyFile.Close();
+                foreach (COMItem item in m_allCOMs.Values)
+                {
+                    if (item.Owner == AppConfig.LoginUserName)
+                        Release(item.Port, item.Owner);
+                }
             }
-            catch (Exception err)
+            catch
             {
-                throw err;
             }
         }
+
+        /*
+        static public void Classify()
+        {
+            foreach (COMItem item in m_allCOMs.Values)
+            {
+                if (item.IsAvaiable())
+                {
+                    m_avaiableComs.Add(item.Port, item);
+                }
+                else
+                {
+                    if (item.IsRunning)
+                        m_runningComs.Add(item.Port, item);
+
+                    if (item.CheckIllegal())
+                        m_illegalComs.Add(item.Port, item);
+
+                    if (item.IsExpired)
+                        m_expiredComs.Add(item.Port, item);
+
+                    if (item.Owner == AppConfig.LoginUserName)
+                        m_reservedByMeComs.Add(item.Port, item);
+                    else
+                        m_reservedByOtherComs.Add(item.Port, item);
+                }
+            }
+        }
+        */
     }
 }

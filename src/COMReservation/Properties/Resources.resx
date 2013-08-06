@@ -144,6 +144,9 @@
   <data name="strAppName" xml:space="preserve">
     <value>COM Reservation</value>
   </data>
+  <data name="strFilterAvaiable" xml:space="preserve">
+    <value>Avaiable</value>
+  </data>
   <data name="strFilterByAll" xml:space="preserve">
     <value>All</value>
   </data>

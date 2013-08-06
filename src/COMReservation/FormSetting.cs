@@ -12,15 +12,15 @@ namespace COMReservation
 {
     public partial class FormSetting : Form
     {
-        private SortedList m_leftPorts = new SortedList();
-        private SortedList m_rightPorts = new SortedList();
+        private SortedList<uint, COMItem> m_selectedPorts = new SortedList<uint, COMItem>();
+        private SortedList<uint, COMItem> m_removedPorts = new SortedList<uint, COMItem>();
+        private bool m_portInfoDirtyFlag = false;
         private ISettingHandle m_settingHandle = null;
 
         public FormSetting(ISettingHandle handle)
         {
             InitializeComponent();
-            lboxPorts.SelectionMode = SelectionMode.MultiSimple;
-            lboxSelectPorts.SelectionMode = SelectionMode.MultiSimple;
+            lboxPorts.SelectionMode = SelectionMode.One;
             m_settingHandle = handle;
         }
 
@@ -48,68 +48,43 @@ namespace COMReservation
 
             tboxGlobalSecureCRTExeFilePath.Text = AppConfig.SecureCRTExeFilePath;
             tboxGlobalSecureCRTExeFilePath.ReadOnly = true;
-            tboxGlobalHistoryDir.Text = AppConfig.SecureCRTExeFilePath;
+            tboxGlobalHistoryFilePath.Text = AppConfig.HistoryFileName;
+            tboxHistoryFolder.Text = AppConfig.HistoryFolder;
 
             btnPersonalSelectComAvaiableColor.BackColor = AppConfig.ColorComAvaiable;
-            btnPersonalSelectComReservedByMeColor.BackColor = AppConfig.ColorComReservedByMe;
+            btnPersonalSelectComReservedByMeColor.BackColor = AppConfig.ColorComReservedByMeNotExpired;
             btnPersonalSelectComReservedByOtherColor.BackColor = AppConfig.ColorComReservedByOther;
 
             nudComListRowHeight.Minimum = 1;
             nudComListRowHeight.Maximum = 1024;
             nudComListRowHeight.Value = AppConfig.COMListRowHeight;
-            
+
+            cboxColorSchemes.Items.AddRange(AppConfig.ColorSchemeNames);
+            cboxColorSchemes.Text = AppConfig.CurrentColorScheme;
 
             Version appVer = new Version(Application.ProductVersion);
             labelVersion.Text = appVer.ToString();
 
-            LoadAllComs();
-
-        }
-
-        private void LoadAllComs()
-        {
-            m_leftPorts.Clear();
-            m_rightPorts.Clear();
-
-            lboxPorts.Items.Clear();
-            lboxSelectPorts.Items.Clear();
-
-            foreach (COMItem item in COMHandle.AllCOMs.Values)
+            SortedList<uint, COMItem> allComs = COMHandle.AllCOMs;
+            foreach (COMItem item in allComs.Values)
             {
-                lboxSelectPorts.Items.Add(item.Port.ToString());
+                m_selectedPorts.Add(item.Port, item);
             }
+            RefreshComPortsListBoxes();
         }
 
-        private void RefreshLeftRightListView()
+        private void RefreshComPortsListBoxes()
         {
-
+            lboxPorts.Items.Clear();
+            foreach (uint port in m_selectedPorts.Keys)
+            {
+                lboxPorts.Items.Add(port.ToString());
+            }
         }
 
         private void btnInit_Click(object sender, EventArgs e)
         {
-            if (DialogResult.Yes != MessageBox.Show("Are you sure want to re-initialite the COM ports? if so, all current status of ports will be removed.",
-                "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
-            {
-                return;
-            }
 
-            COMHandle.Clear();
-            for (uint i = (uint)nudPortStart.Value; i <= (uint)nudPortEnd.Value; i++)
-            {
-                COMHandle.Add(new COMItem(i));
-            }
-
-            LoadAllComs();
-        }
-
-        private void btnToRight_Click(object sender, EventArgs e)
-        {
-            for (int i = 0; i < lboxPorts.SelectedItems.Count; i++)
-            {
-                uint port = uint.Parse(lboxPorts.SelectedItems[i].ToString());
-                m_leftPorts.Remove(port);
-                m_rightPorts.Add(port, port);
-            }
         }
 
         private void btnSave_Click(object sender, EventArgs e)
@@ -118,18 +93,23 @@ namespace COMReservation
             AppConfig.DefaultBaud = uint.Parse(cboxPersonalDefaultBaudrate.Text);
             AppConfig.COMListRowHeight = (int)nudComListRowHeight.Value;
             AppConfig.ColorComAvaiable = btnPersonalSelectComAvaiableColor.BackColor;
-            AppConfig.ColorComReservedByMe = btnPersonalSelectComReservedByMeColor.BackColor;
+            AppConfig.ColorComReservedByMeNotExpired = btnPersonalSelectComReservedByMeColor.BackColor;
             AppConfig.ColorComReservedByOther = btnPersonalSelectComReservedByOtherColor.BackColor;
             AppConfig.LogFilePath = tboxPersonalLogFilePath.Text;
             AppConfig.LogLineFormat = tboxPersonalLogLineFormat.Text;
 
             AppConfig.SecureCRTExeFilePath = tboxGlobalSecureCRTExeFilePath.Text;
-            AppConfig.HistoryFolder = tboxGlobalHistoryDir.Text;
+            AppConfig.HistoryFileName = tboxGlobalHistoryFilePath.Text;
+            AppConfig.HistoryFolder = tboxHistoryFolder.Text;
 
             try
             {
                 AppConfig.SaveGlobalConfig();
                 AppConfig.SavePersonalConfig();
+                if (m_portInfoDirtyFlag || m_removedPorts.Count > 0)
+                {
+                    SavePortsInfo();
+                }
             }
             catch (Exception err)
             {
@@ -177,16 +157,15 @@ namespace COMReservation
             tboxGlobalSecureCRTExeFilePath.Text = ofd.FileName;
         }
 
-        private void btnGlobalBrowserHistoryDir_Click(object sender, EventArgs e)
+        private void btnGlobalBrowserHistoryFilePath_Click(object sender, EventArgs e)
         {
-            FolderBrowserDialog fbd = new FolderBrowserDialog();
-            fbd.SelectedPath = tboxGlobalHistoryDir.Text;
-            if (DialogResult.OK != fbd.ShowDialog())
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.FileName = tboxGlobalHistoryFilePath.Text;
+            if (DialogResult.OK != ofd.ShowDialog())
             {
                 return;
             }
-
-            tboxGlobalHistoryDir.Text = fbd.SelectedPath;
+            tboxGlobalHistoryFilePath.Text = ofd.FileName;
         }
 
         private void btnCancle_Click(object sender, EventArgs e)
@@ -198,6 +177,178 @@ namespace COMReservation
         {
             if (m_settingHandle != null)
                 m_settingHandle.OnChangeRowHeight((int)nudComListRowHeight.Value);
+        }
+
+        private void lboxPorts_KeyDown(object sender, KeyEventArgs e)
+        {
+            /*
+            if (e.KeyCode == Keys.Delete)
+            {
+                if (lboxPorts.SelectedIndices.Count <= 0)
+                    return;
+                
+                if (DialogResult.Yes != MessageBox.Show("Are you sure to delete the port " + lboxPorts.SelectedItem.ToString() + "?", "Delete Confirm",
+                   MessageBoxButtons.YesNo, MessageBoxIcon.Question))
+                {
+                    return;
+                }
+                COMHandle.Remove(uint.Parse(lboxPorts.SelectedItem.ToString()));
+                lboxPorts.Items.RemoveAt(lboxPorts.SelectedIndex);
+            }
+             * */
+        }
+
+        private void tabPage3_Leave(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnPortsRangeAdd_Click(object sender, EventArgs e)
+        {
+            if (DialogResult.Yes != MessageBox.Show("Are you sure want to initialize the COM ports? The removed ports list will be cleared!",
+                  "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
+            {
+                return;
+            }
+
+            m_portInfoDirtyFlag = true;
+            m_selectedPorts.Clear();
+            m_removedPorts.Clear();
+            lboxRemovedPorts.Items.Clear();
+
+            for (uint i = (uint)nudPortStart.Value; i <= (uint)nudPortEnd.Value; i++)
+            {
+                COMItem item;
+                item = COMHandle.FindCOM(i);
+                if (item == null)
+                    item = new COMItem(i);
+                m_selectedPorts.Add(i, item);
+            }
+
+            RefreshComPortsListBoxes();
+        }
+
+        private void btnRemovePort_Click(object sender, EventArgs e)
+        {
+            int cnt = lboxPorts.SelectedIndices.Count;
+            for (int i = 0; i < cnt; i++)
+            {
+                int idx = lboxPorts.SelectedIndices[i];
+                uint port = m_selectedPorts.Keys[idx];
+                m_removedPorts.Add(port, m_selectedPorts[port]);
+                m_selectedPorts.RemoveAt(idx);
+                lboxPorts.Items.RemoveAt(idx);
+            }
+
+            if (cnt > 0)
+            {
+                RefreshRemovedPortsView();
+            }
+        }
+
+        private void RefreshRemovedPortsView()
+        {
+            lboxRemovedPorts.Items.Clear();
+            foreach (int i in m_removedPorts.Keys)
+            {
+                lboxRemovedPorts.Items.Add(i);
+            }
+
+        }
+
+        private void btnResumePort_Click(object sender, EventArgs e)
+        {
+            int cnt = lboxRemovedPorts.SelectedIndices.Count;
+            for (int i = 0; i < cnt; i++)
+            {
+                int idx = lboxRemovedPorts.SelectedIndices[i];
+                uint port = m_removedPorts.Keys[idx];
+                m_selectedPorts.Add(port, m_removedPorts[port]);
+                m_removedPorts.RemoveAt(idx);
+                lboxRemovedPorts.Items.RemoveAt(idx);
+            }
+
+            if (cnt > 0)
+            {
+                RefreshComPortsListBoxes();
+            }
+        }
+
+        private void btnClearPorts_Click(object sender, EventArgs e)
+        {
+            m_selectedPorts.Clear();
+            m_removedPorts.Clear();
+            lboxPorts.Items.Clear();
+            lboxRemovedPorts.Items.Clear();
+            m_portInfoDirtyFlag = true;
+        }
+
+        private void SavePortsInfo()
+        {
+            COMHandle.Clear();
+            StringBuilder strComs = new StringBuilder();
+
+            foreach (int i in m_selectedPorts.Keys)
+            {
+                COMHandle.Add(m_selectedPorts[(uint)i]);
+                strComs.Append(i.ToString() + ",");
+            }
+
+            if (strComs[strComs.Length - 1] == ',')
+                strComs.Remove(strComs.Length - 1, 1);
+
+            HistoryWritter.Write("Save the ports info: " + strComs.ToString());
+            AppConfig.SaveComInfo();
+        }
+
+        private void btnSavePortsInfo_Click(object sender, EventArgs e)
+        {
+            if (DialogResult.Yes != MessageBox.Show("Are you sure want to save the COM ports?",
+                   "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
+            {
+                return;
+            }
+
+            SavePortsInfo();
+        }
+
+        private void btnPortsSingleAdd_Click(object sender, EventArgs e)
+        {
+            uint port = 0xffffff;
+            try
+            {
+                port = uint.Parse(tboxPortSingleAddInput.Text);
+            }
+            catch
+            {
+                MessageBox.Show("Invalid port number!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            if (m_selectedPorts.Keys.Contains(port))
+            {
+                MessageBox.Show("The port " + port + " has already in the list!", "Add Port Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            COMItem item = COMHandle.FindCOM(port);
+            if (item == null)
+                item = new COMItem();
+
+            m_portInfoDirtyFlag = true;
+            m_selectedPorts.Add(port, item);
+            RefreshComPortsListBoxes();
+        }
+
+        private void btnGlobalBrowserHistoryDir_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog fbd = new FolderBrowserDialog();
+            fbd.SelectedPath = AppConfig.HistoryFolder;
+            if (DialogResult.OK != fbd.ShowDialog())
+            {
+                return;
+            }
+
+            tboxHistoryFolder.Text = fbd.SelectedPath;
         }
     }
 }

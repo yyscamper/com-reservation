@@ -35,14 +35,11 @@
             this.tboxLogLineFormat = new System.Windows.Forms.TextBox();
             this.tboxDescription = new System.Windows.Forms.TextBox();
             this.tboxLogFilePath = new System.Windows.Forms.TextBox();
-            this.cboxCreateInTab = new System.Windows.Forms.CheckBox();
             this.dtpExpireTime = new System.Windows.Forms.DateTimePicker();
             this.label8 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
-            this.cboxActionScripts = new System.Windows.Forms.ComboBox();
             this.btnActionSecureCRT = new System.Windows.Forms.Button();
-            this.label11 = new System.Windows.Forms.Label();
             this.cboxBaud = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
             this.cboxSessionName = new System.Windows.Forms.ComboBox();
@@ -52,11 +49,16 @@
             this.label1 = new System.Windows.Forms.Label();
             this.btnReserve = new System.Windows.Forms.Button();
             this.groupCOMDetail = new System.Windows.Forms.GroupBox();
+            this.cboxExpireTimeValue = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.cboxExpireTimeUnit = new System.Windows.Forms.ComboBox();
             this.lableLogFilePathHelp = new System.Windows.Forms.Label();
+            this.cboxCreateInTab = new System.Windows.Forms.CheckBox();
             this.groupActionButton = new System.Windows.Forms.GroupBox();
-            this.btnActionWait = new System.Windows.Forms.Button();
+            this.btnReleaseAll = new System.Windows.Forms.Button();
             this.groupFilter = new System.Windows.Forms.GroupBox();
+            this.radioBtnReservedByMe = new System.Windows.Forms.RadioButton();
+            this.radioBtnAvaiable = new System.Windows.Forms.RadioButton();
             this.cboxFilter = new System.Windows.Forms.ComboBox();
             this.labelFilter = new System.Windows.Forms.Label();
             this.btnSetting = new System.Windows.Forms.Button();
@@ -69,7 +71,8 @@
             this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem7 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem8 = new System.Windows.Forms.ToolStripMenuItem();
-            this.btnActionEditSave = new System.Windows.Forms.Button();
+            this.btnReschedule = new System.Windows.Forms.Button();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.groupCOMDetail.SuspendLayout();
             this.groupActionButton.SuspendLayout();
             this.groupFilter.SuspendLayout();
@@ -136,26 +139,16 @@
             this.tboxLogFilePath.Size = new System.Drawing.Size(261, 23);
             this.tboxLogFilePath.TabIndex = 4;
             // 
-            // cboxCreateInTab
-            // 
-            this.cboxCreateInTab.AutoSize = true;
-            this.cboxCreateInTab.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.cboxCreateInTab.Location = new System.Drawing.Point(8, 383);
-            this.cboxCreateInTab.Name = "cboxCreateInTab";
-            this.cboxCreateInTab.Size = new System.Drawing.Size(112, 21);
-            this.cboxCreateInTab.TabIndex = 3;
-            this.cboxCreateInTab.Text = "Create In Tab?";
-            this.cboxCreateInTab.UseVisualStyleBackColor = true;
-            // 
             // dtpExpireTime
             // 
             this.dtpExpireTime.CustomFormat = "yyyy-MM-dd HH:mm";
             this.dtpExpireTime.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.dtpExpireTime.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-            this.dtpExpireTime.Location = new System.Drawing.Point(113, 116);
+            this.dtpExpireTime.Location = new System.Drawing.Point(4, 163);
             this.dtpExpireTime.Name = "dtpExpireTime";
             this.dtpExpireTime.Size = new System.Drawing.Size(155, 23);
             this.dtpExpireTime.TabIndex = 2;
+            this.dtpExpireTime.ValueChanged += new System.EventHandler(this.dtpExpireTime_ValueChanged);
             // 
             // label8
             // 
@@ -186,36 +179,16 @@
             this.label6.TabIndex = 0;
             this.label6.Text = "Description";
             // 
-            // cboxActionScripts
-            // 
-            this.cboxActionScripts.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.cboxActionScripts.FormattingEnabled = true;
-            this.cboxActionScripts.Location = new System.Drawing.Point(8, 351);
-            this.cboxActionScripts.Name = "cboxActionScripts";
-            this.cboxActionScripts.Size = new System.Drawing.Size(260, 25);
-            this.cboxActionScripts.TabIndex = 1;
-            this.cboxActionScripts.Text = "EnterPOST.vbs";
-            // 
             // btnActionSecureCRT
             // 
             this.btnActionSecureCRT.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnActionSecureCRT.Location = new System.Drawing.Point(142, 52);
+            this.btnActionSecureCRT.Location = new System.Drawing.Point(4, 13);
             this.btnActionSecureCRT.Name = "btnActionSecureCRT";
             this.btnActionSecureCRT.Size = new System.Drawing.Size(130, 33);
             this.btnActionSecureCRT.TabIndex = 4;
             this.btnActionSecureCRT.Text = "Open SecureCRT";
             this.btnActionSecureCRT.UseVisualStyleBackColor = true;
             this.btnActionSecureCRT.Click += new System.EventHandler(this.btnOpen_Click);
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label11.Location = new System.Drawing.Point(9, 332);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(47, 17);
-            this.label11.TabIndex = 0;
-            this.label11.Text = "Action:";
             // 
             // cboxBaud
             // 
@@ -245,6 +218,7 @@
             this.cboxSessionName.Name = "cboxSessionName";
             this.cboxSessionName.Size = new System.Drawing.Size(155, 25);
             this.cboxSessionName.TabIndex = 1;
+            this.cboxSessionName.SelectedIndexChanged += new System.EventHandler(this.cboxSessionName_SelectedIndexChanged);
             // 
             // label3
             // 
@@ -297,7 +271,9 @@
             // 
             // groupCOMDetail
             // 
+            this.groupCOMDetail.Controls.Add(this.cboxExpireTimeValue);
             this.groupCOMDetail.Controls.Add(this.label2);
+            this.groupCOMDetail.Controls.Add(this.cboxExpireTimeUnit);
             this.groupCOMDetail.Controls.Add(this.lableLogFilePathHelp);
             this.groupCOMDetail.Controls.Add(this.cboxEnableLogLineFormat);
             this.groupCOMDetail.Controls.Add(this.cboxEnableLogFilePath);
@@ -305,12 +281,9 @@
             this.groupCOMDetail.Controls.Add(this.tboxDescription);
             this.groupCOMDetail.Controls.Add(this.tboxLogFilePath);
             this.groupCOMDetail.Controls.Add(this.cboxCreateInTab);
-            this.groupCOMDetail.Controls.Add(this.dtpExpireTime);
             this.groupCOMDetail.Controls.Add(this.label8);
             this.groupCOMDetail.Controls.Add(this.label7);
             this.groupCOMDetail.Controls.Add(this.label6);
-            this.groupCOMDetail.Controls.Add(this.cboxActionScripts);
-            this.groupCOMDetail.Controls.Add(this.label11);
             this.groupCOMDetail.Controls.Add(this.cboxBaud);
             this.groupCOMDetail.Controls.Add(this.label4);
             this.groupCOMDetail.Controls.Add(this.cboxSessionName);
@@ -323,10 +296,18 @@
             this.groupCOMDetail.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.groupCOMDetail.Name = "groupCOMDetail";
             this.groupCOMDetail.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.groupCOMDetail.Size = new System.Drawing.Size(278, 409);
+            this.groupCOMDetail.Size = new System.Drawing.Size(278, 366);
             this.groupCOMDetail.TabIndex = 2;
             this.groupCOMDetail.TabStop = false;
             this.groupCOMDetail.Enter += new System.EventHandler(this.groupCOMDetail_Enter);
+            // 
+            // cboxExpireTimeValue
+            // 
+            this.cboxExpireTimeValue.FormattingEnabled = true;
+            this.cboxExpireTimeValue.Location = new System.Drawing.Point(113, 113);
+            this.cboxExpireTimeValue.Name = "cboxExpireTimeValue";
+            this.cboxExpireTimeValue.Size = new System.Drawing.Size(81, 25);
+            this.cboxExpireTimeValue.TabIndex = 8;
             // 
             // label2
             // 
@@ -338,6 +319,15 @@
             this.label2.Text = "?";
             this.label2.Click += new System.EventHandler(this.lableLogFilePathHelp_Click);
             // 
+            // cboxExpireTimeUnit
+            // 
+            this.cboxExpireTimeUnit.FormattingEnabled = true;
+            this.cboxExpireTimeUnit.Location = new System.Drawing.Point(200, 113);
+            this.cboxExpireTimeUnit.Name = "cboxExpireTimeUnit";
+            this.cboxExpireTimeUnit.Size = new System.Drawing.Size(68, 25);
+            this.cboxExpireTimeUnit.TabIndex = 7;
+            this.cboxExpireTimeUnit.SelectedIndexChanged += new System.EventHandler(this.cboxExpireTimeUnit_SelectedIndexChanged);
+            // 
             // lableLogFilePathHelp
             // 
             this.lableLogFilePathHelp.AutoSize = true;
@@ -348,44 +338,85 @@
             this.lableLogFilePathHelp.Text = "?";
             this.lableLogFilePathHelp.Click += new System.EventHandler(this.lableLogFilePathHelp_Click);
             // 
+            // cboxCreateInTab
+            // 
+            this.cboxCreateInTab.AutoSize = true;
+            this.cboxCreateInTab.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.cboxCreateInTab.Location = new System.Drawing.Point(7, 332);
+            this.cboxCreateInTab.Name = "cboxCreateInTab";
+            this.cboxCreateInTab.Size = new System.Drawing.Size(112, 21);
+            this.cboxCreateInTab.TabIndex = 3;
+            this.cboxCreateInTab.Text = "Create In Tab?";
+            this.cboxCreateInTab.UseVisualStyleBackColor = true;
+            // 
             // groupActionButton
             // 
-            this.groupActionButton.Controls.Add(this.btnActionWait);
+            this.groupActionButton.Controls.Add(this.comboBox1);
+            this.groupActionButton.Controls.Add(this.btnReschedule);
+            this.groupActionButton.Controls.Add(this.btnReleaseAll);
             this.groupActionButton.Controls.Add(this.btnReserve);
             this.groupActionButton.Controls.Add(this.btnActionSecureCRT);
-            this.groupActionButton.Location = new System.Drawing.Point(538, 447);
+            this.groupActionButton.Controls.Add(this.dtpExpireTime);
+            this.groupActionButton.Location = new System.Drawing.Point(538, 404);
             this.groupActionButton.Name = "groupActionButton";
             this.groupActionButton.Size = new System.Drawing.Size(278, 212);
             this.groupActionButton.TabIndex = 6;
             this.groupActionButton.TabStop = false;
             // 
-            // btnActionWait
+            // btnReleaseAll
             // 
-            this.btnActionWait.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnActionWait.Location = new System.Drawing.Point(7, 12);
-            this.btnActionWait.Name = "btnActionWait";
-            this.btnActionWait.Size = new System.Drawing.Size(129, 33);
-            this.btnActionWait.TabIndex = 5;
-            this.btnActionWait.Text = "+Wait";
-            this.btnActionWait.UseVisualStyleBackColor = true;
-            this.btnActionWait.Click += new System.EventHandler(this.btnActionWait_Click);
+            this.btnReleaseAll.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnReleaseAll.Location = new System.Drawing.Point(4, 52);
+            this.btnReleaseAll.Name = "btnReleaseAll";
+            this.btnReleaseAll.Size = new System.Drawing.Size(129, 33);
+            this.btnReleaseAll.TabIndex = 5;
+            this.btnReleaseAll.Text = "Release All";
+            this.btnReleaseAll.UseVisualStyleBackColor = true;
+            this.btnReleaseAll.Visible = false;
+            this.btnReleaseAll.Click += new System.EventHandler(this.btnReleaseAll_Click);
             // 
             // groupFilter
             // 
+            this.groupFilter.Controls.Add(this.radioBtnReservedByMe);
+            this.groupFilter.Controls.Add(this.radioBtnAvaiable);
             this.groupFilter.Controls.Add(this.cboxFilter);
             this.groupFilter.Controls.Add(this.labelFilter);
-            this.groupFilter.Location = new System.Drawing.Point(244, 5);
+            this.groupFilter.Location = new System.Drawing.Point(79, 1);
             this.groupFilter.Name = "groupFilter";
-            this.groupFilter.Size = new System.Drawing.Size(218, 42);
+            this.groupFilter.Size = new System.Drawing.Size(383, 42);
             this.groupFilter.TabIndex = 7;
             this.groupFilter.TabStop = false;
+            // 
+            // radioBtnReservedByMe
+            // 
+            this.radioBtnReservedByMe.AutoSize = true;
+            this.radioBtnReservedByMe.Location = new System.Drawing.Point(132, 15);
+            this.radioBtnReservedByMe.Name = "radioBtnReservedByMe";
+            this.radioBtnReservedByMe.Size = new System.Drawing.Size(121, 21);
+            this.radioBtnReservedByMe.TabIndex = 10;
+            this.radioBtnReservedByMe.TabStop = true;
+            this.radioBtnReservedByMe.Text = "Reserved by Me";
+            this.radioBtnReservedByMe.UseVisualStyleBackColor = true;
+            this.radioBtnReservedByMe.CheckedChanged += new System.EventHandler(this.radioBtnReservedByMe_CheckedChanged);
+            // 
+            // radioBtnAvaiable
+            // 
+            this.radioBtnAvaiable.AutoSize = true;
+            this.radioBtnAvaiable.Location = new System.Drawing.Point(50, 15);
+            this.radioBtnAvaiable.Name = "radioBtnAvaiable";
+            this.radioBtnAvaiable.Size = new System.Drawing.Size(75, 21);
+            this.radioBtnAvaiable.TabIndex = 10;
+            this.radioBtnAvaiable.TabStop = true;
+            this.radioBtnAvaiable.Text = "Avaiable";
+            this.radioBtnAvaiable.UseVisualStyleBackColor = true;
+            this.radioBtnAvaiable.CheckedChanged += new System.EventHandler(this.radioBtnAvaiable_CheckedChanged);
             // 
             // cboxFilter
             // 
             this.cboxFilter.FormattingEnabled = true;
-            this.cboxFilter.Location = new System.Drawing.Point(42, 12);
+            this.cboxFilter.Location = new System.Drawing.Point(258, 12);
             this.cboxFilter.Name = "cboxFilter";
-            this.cboxFilter.Size = new System.Drawing.Size(170, 25);
+            this.cboxFilter.Size = new System.Drawing.Size(119, 25);
             this.cboxFilter.TabIndex = 9;
             this.cboxFilter.SelectedIndexChanged += new System.EventHandler(this.cboxFilter_SelectedIndexChanged);
             // 
@@ -472,23 +503,35 @@
             this.toolStripMenuItem8.Size = new System.Drawing.Size(243, 22);
             this.toolStripMenuItem8.Text = "%% - percent (%)";
             // 
-            // btnActionEditSave
+            // btnReschedule
             // 
-            this.btnActionEditSave.Location = new System.Drawing.Point(778, 14);
-            this.btnActionEditSave.Margin = new System.Windows.Forms.Padding(4);
-            this.btnActionEditSave.Name = "btnActionEditSave";
-            this.btnActionEditSave.Size = new System.Drawing.Size(40, 33);
-            this.btnActionEditSave.TabIndex = 0;
-            this.btnActionEditSave.Text = "Edit";
-            this.btnActionEditSave.UseVisualStyleBackColor = true;
-            this.btnActionEditSave.Click += new System.EventHandler(this.btnEdit_Click);
+            this.btnReschedule.Location = new System.Drawing.Point(140, 52);
+            this.btnReschedule.Name = "btnReschedule";
+            this.btnReschedule.Size = new System.Drawing.Size(128, 33);
+            this.btnReschedule.TabIndex = 6;
+            this.btnReschedule.Text = "Re-Schedule";
+            this.btnReschedule.UseVisualStyleBackColor = true;
+            this.btnReschedule.Click += new System.EventHandler(this.btnReschedule_Click);
+            // 
+            // comboBox1
+            // 
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Items.AddRange(new object[] {
+            "Reserve 1",
+            "Release 1",
+            "Reserve 2",
+            "Release 2"});
+            this.comboBox1.Location = new System.Drawing.Point(6, 100);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(121, 25);
+            this.comboBox1.TabIndex = 7;
+            this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
             // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(834, 671);
-            this.Controls.Add(this.btnActionEditSave);
             this.Controls.Add(this.btnSetting);
             this.Controls.Add(this.btnRefresh);
             this.Controls.Add(this.groupFilter);
@@ -520,14 +563,11 @@
         private System.Windows.Forms.TextBox tboxLogLineFormat;
         private System.Windows.Forms.TextBox tboxDescription;
         private System.Windows.Forms.TextBox tboxLogFilePath;
-        private System.Windows.Forms.CheckBox cboxCreateInTab;
         private System.Windows.Forms.DateTimePicker dtpExpireTime;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.ComboBox cboxActionScripts;
         private System.Windows.Forms.Button btnActionSecureCRT;
-        private System.Windows.Forms.Label label11;
         private System.Windows.Forms.ComboBox cboxBaud;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.ComboBox cboxSessionName;
@@ -551,11 +591,17 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem8;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label lableLogFilePathHelp;
-        private System.Windows.Forms.Button btnActionWait;
-        private System.Windows.Forms.Button btnActionEditSave;
         //private System.Windows.Forms.ListView listViewComTable;
         private System.Windows.Forms.ComboBox cboxFilter;
         private System.Windows.Forms.Label labelFilter;
+        private System.Windows.Forms.RadioButton radioBtnReservedByMe;
+        private System.Windows.Forms.RadioButton radioBtnAvaiable;
+        private System.Windows.Forms.ComboBox cboxExpireTimeUnit;
+        private System.Windows.Forms.ComboBox cboxExpireTimeValue;
+        private System.Windows.Forms.CheckBox cboxCreateInTab;
+        private System.Windows.Forms.Button btnReleaseAll;
+        private System.Windows.Forms.Button btnReschedule;
+        private System.Windows.Forms.ComboBox comboBox1;
     }
 }
 

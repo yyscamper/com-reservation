@@ -26,10 +26,11 @@ namespace COMReservation
         private int COL_BAUD = 2;
         private int COL_REMAIN_TIME = 3;
         private int COL_DESCRIPTION = 4;
-        private int COL_WAIT_LIST = 5;
-        private int COL_PROCESS_INFO = 6;
-
-        private COMItem m_currCOMIem = null;
+        private int COL_PROCESS_INFO = 5;
+        BackgroundWorker m_bgkWorker = null;
+        private bool m_pauseBackgroundWorkFlag = false;
+        private bool m_pauseBackgroundWorkDone = false;
+        private bool m_backgroundWorkerInitReady = false;
 #if USE_XPTABLE
         private TableModel  m_xpTableModel;
         private ColumnModel m_xpColumnModel;
@@ -44,13 +45,14 @@ namespace COMReservation
 
             this.Text = "COM-Reversation (" + AppConfig.LoginUserName + ")";
 
-            cboxEnableLogFilePath.Checked = true;
+            btnReleaseAll.Visible = true;
+            cboxEnableLogFilePath.Checked = false;
             tboxLogFilePath.Text = AppConfig.LogFilePath;
+            tboxLogFilePath.Enabled = false;
 
             cboxEnableLogLineFormat.Checked = false;
             tboxLogLineFormat.Text = AppConfig.LogLineFormat;
             tboxLogLineFormat.Enabled = false;
-            cboxActionScripts.Items.Add("Browser Script...");
             cboxFilter.Text = Properties.Resources.strFilterByAll;
 
 #if USE_XPTABLE
@@ -67,8 +69,8 @@ namespace COMReservation
 
             this.Controls.Add(m_xpTable);
             
-            string[] colNames = new string[] {"Port", "Owner", "Baud", "Remain Time", "Description", "Wait List", "Process"};
-            int[]    colWidths = new int[]   {    40,      80,     60,            90,           240,         120,       80 };
+            string[] colNames = new string[] {"Port", "Owner", "Baud", "Remain Time", "Description", "Process"};
+            int[]    colWidths = new int[]   {    40,      80,     60,            90,           240,      240 };
             for (int i = 0; i < colNames.Length; i++)
             {
                 m_xpColumnModel.Columns.Add(new TextColumn(colNames[i], colWidths[i]));
@@ -90,18 +92,20 @@ namespace COMReservation
 
             cboxFilter.Items.AddRange(new string[] {
                 Properties.Resources.strFilterByAll,
+                Properties.Resources.strFilterAvaiable,
                 Properties.Resources.strFilterReservedByMe,
                 Properties.Resources.strFilterReservedByOthers,
                 Properties.Resources.strFilterIllegal,
                 Properties.Resources.strFilterRunning,
                 Properties.Resources.strFilterTimeExpired});
 
-            btnActionEditSave.Text = Properties.Resources.strActionEditCom;
-            btnActionEditSave.Enabled = false;
-            btnActionSecureCRT.Text = Properties.Resources.strActionSecureCrtOpen;
-            btnActionWait.Text = Properties.Resources.strActionWaitAdd;
+            cboxExpireTimeUnit.Items.AddRange(new string[] { "Minutes", "Hours", "Days" });
+            cboxExpireTimeUnit.SelectedIndex = 1;
 
-            groupActionButton.Enabled = groupCOMDetail.Enabled = false;
+
+            btnActionSecureCRT.Text = Properties.Resources.strActionSecureCrtOpen;
+
+            groupActionButton.Enabled = groupCOMDetail.Enabled = true;
             this.DoubleBuffered = true;
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint, true);
             UpdateStyles();
@@ -110,7 +114,7 @@ namespace COMReservation
 
         private void FormMain_Load(object sender, EventArgs e)
         {
-
+            
             LocateSizeFitByTableSize();
 
             cboxBaud.Items.AddRange(AppConfig.FreqBaudrates);
@@ -132,9 +136,11 @@ namespace COMReservation
             //MethodInvoker mi = new MethodInvoker(BackgroudUpdateView);
             //mi.BeginInvoke(null, null);
 
-            BackgroundWorker bgkWorker = new BackgroundWorker();
-            bgkWorker.DoWork += new DoWorkEventHandler(BackgroudUpdateView);
-            bgkWorker.RunWorkerAsync();
+            m_bgkWorker = new BackgroundWorker();
+            m_bgkWorker.DoWork += new DoWorkEventHandler(BackgroudUpdateView);
+            m_bgkWorker.RunWorkerAsync();
+            m_bgkWorker.WorkerSupportsCancellation = true;
+            m_backgroundWorkerInitReady = true;
         }
 
         private string GetProcessString(int procId)
@@ -158,10 +164,22 @@ namespace COMReservation
             BackgroundWorker worker = sender as BackgroundWorker;
             while (true)
             {
+
                 if (worker.CancellationPending) //Stop background refresh
                 {
                     return;
                 }
+
+                if (m_pauseBackgroundWorkFlag)
+                {
+                    m_pauseBackgroundWorkDone = true;
+                    System.Threading.Thread.Sleep(50);
+                    continue;
+                }
+
+                AppConfig.LoadComInfo();
+
+                btnReleaseAll.Enabled = (COMHandle.TotalNumberOfMyReserved > 0);
 #if USE_XPTABLE
                 for (int r = 0; r < m_xpTableModel.Rows.Count; r++)
                 {
@@ -176,19 +194,33 @@ namespace COMReservation
                         continue;
                     }
                     COMItem comItem = COMHandle.FindCOM(port);
-                    if (comItem.Owner.Length <= 0)
+                    if (comItem == null)
                         continue;
 
-                    if (comItem != null)
+                    if (!comItem.IsAvaiable() && comItem.IsExpired && !comItem.IsRunning)
                     {
-                        try
-                        {
-                            viewRow.Cells[COL_REMAIN_TIME].Text = comItem.StrRemainTime;
-                            viewRow.Cells[COL_PROCESS_INFO].Text = comItem.ProcessInfo;
+                        COMHandle.Release(port, comItem.Owner);
+                    }
 
-                        }
-                        catch
+                    RefreshSelectedComInfo();
+
+                    viewRow.Cells[COL_REMAIN_TIME].Text = comItem.StrRemainTime;
+                    viewRow.Cells[COL_PROCESS_INFO].Text = comItem.ProcessInfo;
+
+                    if (m_xpTable.SelectedIndicies.Length > 0
+                        && m_xpTable.SelectedIndicies[0] == comItem.Index)
+                    {
+                        if (AppConfig.LoginUserName == comItem.Owner)
                         {
+                            if (comItem.SecureCrtProcess != null)
+                            {
+                                btnActionSecureCRT.Text = Properties.Resources.strActionSecureCrtKill;
+                            }
+                            else
+                            {
+                                btnActionSecureCRT.Text = Properties.Resources.strActionSecureCrtOpen;
+                            }
+
                         }
                     }
 #else
@@ -236,6 +268,8 @@ namespace COMReservation
 
 #endif
                 }
+
+                RefreshCOMInfoWithourClear();
                 //listViewComTable.Items.Clear();
                 //listViewComTable.Items.AddRange(arrItems);
                 System.Threading.Thread.Sleep(1000);
@@ -246,12 +280,23 @@ namespace COMReservation
         {
             try
             {
+                bool isNeedStartBackgroundWorker = false;
+                if (m_backgroundWorkerInitReady && !m_pauseBackgroundWorkFlag)
+                {
+                    m_pauseBackgroundWorkDone = false;
+                    m_pauseBackgroundWorkFlag = true;
+                    while (!m_pauseBackgroundWorkDone) ;
+
+                    isNeedStartBackgroundWorker = true;
+                }
                 AppConfig.LoadComInfo();
+
+
 #if USE_XPTABLE
                 m_xpTableModel.Rows.Clear();
 #else
 #endif
-                SortedList allCOMs = COMHandle.AllCOMs;
+                SortedList<uint, COMItem> allCOMs = COMHandle.AllCOMs;
                 foreach (COMItem comItem in allCOMs.Values)
                 {
                     if (CheckFilter(comItem))
@@ -260,6 +305,10 @@ namespace COMReservation
                         //comItem.RowInTable.EnsureVisible();
                     }
                 }
+
+                if (m_backgroundWorkerInitReady && isNeedStartBackgroundWorker)
+                    m_pauseBackgroundWorkFlag = false;
+
             }
             catch (Exception err)
             {
@@ -281,13 +330,17 @@ namespace COMReservation
         private void SetRowStyle(COMItem comItem, Row r)
         {
             Color rowBackColor = AppConfig.ColorComAvaiable;
-            if (comItem.IsAvaiable())
+            if (comItem.CheckIllegal())
+            {
+                rowBackColor = AppConfig.ColorComIllegal;
+            }
+            else if (comItem.IsAvaiable())
             {
                 rowBackColor = AppConfig.ColorComAvaiable;
             }
             else if (comItem.Owner == AppConfig.LoginUserName)
             {
-                rowBackColor = AppConfig.ColorComReservedByMe;
+                rowBackColor = AppConfig.ColorComReservedByMeNotExpired;
             }
             else
             {
@@ -311,7 +364,6 @@ namespace COMReservation
                 comItem.StrBaud,
                 comItem.StrRemainTime,
                 comItem.Description,
-                comItem.WaitListString,
                 comItem.ProcessInfo});
             row.Editable = false;
             SetRowStyle(comItem, row);
@@ -346,6 +398,44 @@ namespace COMReservation
             listViewComTable.Items.Add(lviewItem);
             return lviewItem;
 #endif
+        }
+
+        private void SetTableRow(Row row, COMItem comItem)
+        {
+            if (row == null || comItem == null)
+                return;
+
+            row.Cells[COL_PORT].Text = comItem.Port.ToString();
+            row.Cells[COL_OWNER].Text = comItem.Owner;
+            row.Cells[COL_BAUD].Text = comItem.StrBaud;
+            row.Cells[COL_REMAIN_TIME].Text = comItem.StrRemainTime;
+            row.Cells[COL_DESCRIPTION].Text = comItem.Description;
+            row.Cells[COL_PROCESS_INFO].Text = comItem.ProcessInfo;
+
+            SetRowStyle(comItem, row);
+        }
+
+        private void RefreshCOMInfoWithourClear()
+        {
+            SortedList<uint, COMItem> allComs = COMHandle.AllCOMs;
+            int index = 0;
+            try
+            {
+                foreach (Row row in m_xpTableModel.Rows)
+                {
+                    uint port = uint.Parse(row.Cells[COL_PORT].Text);
+                    COMItem item = COMHandle.FindCOM(port);
+                    SetTableRow(row, item);
+                }
+            }
+            catch (System.InvalidOperationException err)
+            {
+            }
+        }
+
+        private void MonitorComStatusChange()
+        {
+
         }
 
         /// <summary>
@@ -400,16 +490,14 @@ namespace COMReservation
             listViewComTable.Width = tableWidth + 28;
 #endif
 
-            groupCOMDetail.Location = new Point(tableLocation.X + tableWidth + 30, btnSetting.Location.Y + btnSetting.Height + 13);
+            groupCOMDetail.Location = new Point(tableLocation.X + tableWidth + 40, btnSetting.Location.Y + btnSetting.Height);
             groupActionButton.Location = new Point(groupCOMDetail.Location.X, groupCOMDetail.Location.Y + groupCOMDetail.Height + 4);
             groupActionButton.Width = groupCOMDetail.Width;
-            btnActionEditSave.Location = new Point(groupCOMDetail.Location.X + groupCOMDetail.Width - btnActionEditSave.Width,
-                                         groupCOMDetail.Location.Y - btnActionEditSave.Height);
 
 
             //Filter group
-            groupFilter.Location = new Point(tableLocation.X + tableWidth - groupFilter.Width,
-                                             btnSetting.Location.Y - 3);
+            groupFilter.Location = new Point(tableLocation.X + tableWidth - groupFilter.Width + 26,
+                                             btnSetting.Location.Y - 8);
 
             this.Width = groupCOMDetail.Location.X + groupCOMDetail.Width + 25;
             this.Height = tableLocation.Y + tableHeight + 43;
@@ -455,67 +543,16 @@ namespace COMReservation
 #endif
         }
 
-        private void tableComList_CellClick(object sender, XPTable.Events.CellMouseEventArgs e)
+        private COMItem GetSelectedCOMItem()
         {
-            COMItem item = GetCOMItem(e.Row);
-            if (item == null)
-                return;
-
-#if USE_XPTABLE
-            if (e.Row < 0 || e.Row >= m_xpTableModel.Rows.Count)
-#else
-            if (e.Row < 0 || e.Row >= listViewComTable.Items.Count)
-#endif
-            {
-                groupActionButton.Enabled = groupCOMDetail.Enabled = true;
-                return;
-            }
-
-            m_currCOMIem = item;
-
-            groupActionButton.Enabled = groupCOMDetail.Enabled = true;
-
-            cboxCOM.Text = item.Port.ToString();
-            cboxBaud.Text = item.Baud.ToString();
-            cboxSessionName.Text = "Serial-COM" + item.Port;
-            dtpExpireTime.Value = DateTime.Now + new TimeSpan(4, 0, 0);
-
-            if (AppConfig.LoginUserName == item.Owner)
-            {
-                btnReserve.Text = "-Release";
-                btnReserve.Enabled = true;
-                btnActionSecureCRT.Enabled = true;
-                groupCOMDetail.Enabled = false;
-                btnActionEditSave.Enabled = true;
-            }
-            else
-            {
-                btnReserve.Text = "+Reserve";
-                btnReserve.Enabled = true;
-                btnActionSecureCRT.Enabled = false;
-                groupCOMDetail.Enabled = true;
-                btnActionEditSave.Enabled = false;
-            }
-
-
-
-            /*
-            if (COL_ACTION == e.Column)
-            {
-                ActionOnCom(e.Row);
-            }
-            else if (COL_OPEN_SECURECRT == e.Column)
-            {
-                uint port = uint.Parse(tableComList.TableModel.Rows[e.Row].Cells[COL_PORT].Text);
-                string sessionName = "Serial-COM" + tableComList.TableModel.Rows[e.Row].Cells[COL_PORT].Text;
-                bool   createdInTab = false;
-                SecureCRTHandle.Open(sessionName, COMHandle.FindCOM(port), createdInTab);
-            }
-             * */
+            if (m_xpTable.SelectedIndicies.Length <= 0)
+                return null;
+            return GetCOMItem(m_xpTable.SelectedIndicies[0]);
         }
 
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
+            HistoryWritter.Write("close the application.");
             AppConfig.SaveComInfo();
             AppConfig.SaveGlobalConfig();
             AppConfig.SavePersonalConfig();
@@ -551,22 +588,20 @@ namespace COMReservation
         {
             Button btn = (Button)sender;
             uint port = uint.Parse(cboxCOM.Text);
+            AppConfig.LoadComInfo();
             COMItem comItem = COMHandle.FindCOM(port);
             if (comItem == null)
                 return;
 
             if (btn.Text == Properties.Resources.strActionReserve)
             {
-                COMHandle.Reserve(port, AppConfig.LoginUserName, dtpExpireTime.Value, tboxDescription.Text);
-                btnActionWait.Enabled = false;
+                COMHandle.Reserve(port, AppConfig.LoginUserName, ParseExpireTime(), tboxDescription.Text);
                 btnActionSecureCRT.Enabled = true;
                 btnActionSecureCRT.Text = Properties.Resources.strActionSecureCrtOpen;
             }
             else
             {
                 COMHandle.Release(port, AppConfig.LoginUserName);
-                btnActionWait.Enabled = true;
-                btnActionWait.Text = Properties.Resources.strActionWaitAdd;
                 btnActionSecureCRT.Enabled = false;
             }
 
@@ -638,7 +673,7 @@ namespace COMReservation
 
         }
 
-
+        /*
         private void btnActionWait_Click(object sender, EventArgs e)
         {
             if (m_currCOMIem == null)
@@ -673,7 +708,7 @@ namespace COMReservation
                 btnActionWait.Text = Properties.Resources.strActionWaitAdd;
             }
         }
-
+        */
         private void rbtnFilter_CheckedChanged(object sender, EventArgs e)
         {
             RefreshCOMInfo();
@@ -700,9 +735,19 @@ namespace COMReservation
 
         private void btnSetting_Click(object sender, EventArgs e)
         {
+            if (m_backgroundWorkerInitReady)
+            {
+                m_pauseBackgroundWorkDone = false;
+                m_pauseBackgroundWorkFlag = true;
+                while (!m_pauseBackgroundWorkDone) ;
+            }
             new FormSetting(this).ShowDialog(this);
             RefreshCOMInfo();
 
+            if (m_backgroundWorkerInitReady)
+            {
+                m_pauseBackgroundWorkFlag = false;
+            }
         }
 
         private void listViewComTable_MouseClick(object sender, MouseEventArgs e)
@@ -710,17 +755,74 @@ namespace COMReservation
           
         }
 
+        private void RefreshSelectedComInfo()
+        {
+            COMItem item = GetSelectedCOMItem();
+            if (item == null)
+                return;
+
+            if (item.IsAvaiable())
+            {
+                btnActionSecureCRT.Enabled = false;
+                btnReserve.Enabled = true;
+                btnReserve.Text = Properties.Resources.strActionReserve;
+                btnReschedule.Enabled = false;
+
+                foreach (Control ctrl in groupCOMDetail.Controls)
+                {
+                    ctrl.Enabled = true;
+                }
+            }
+            else
+            {
+                if (AppConfig.LoginUserName == item.Owner)
+                {
+                    btnActionSecureCRT.Enabled = true;
+                    btnReserve.Enabled = true;
+                    btnReserve.Text = Properties.Resources.strActionRelease;
+                    btnReschedule.Enabled = true;
+
+                    if (item.IsRunning)
+                    {
+                        btnActionSecureCRT.Text = Properties.Resources.strActionSecureCrtKill;
+                        foreach (Control ctrl in groupCOMDetail.Controls)
+                        {
+                            ctrl.Enabled = (ctrl == cboxExpireTimeValue || ctrl == cboxExpireTimeUnit);
+                        }
+                    }
+                    else
+                    {
+                        btnActionSecureCRT.Text = Properties.Resources.strActionSecureCrtOpen;
+                        foreach (Control ctrl in groupCOMDetail.Controls)
+                        {
+                            ctrl.Enabled = true;
+                        }
+                    }
+                }
+                else
+                {
+                    btnActionSecureCRT.Enabled = false;
+                    btnReserve.Enabled = false;
+                    btnReschedule.Enabled = false;
+                    foreach (Control ctrl in groupCOMDetail.Controls)
+                    {
+                        ctrl.Enabled = false;
+                    }
+                }
+            }
+        }
+
         private void OnSelectCom(COMItem item)
         {
-            m_currCOMIem = item;
-            groupActionButton.Enabled = groupCOMDetail.Enabled = true;
+            if (item == null)
+                return;
 
             cboxCOM.Text = item.Port.ToString();
             cboxCOM.Enabled = false;
             cboxBaud.Text = item.Baud.ToString();
+            cboxSessionName.Items.Clear();
             cboxSessionName.Items.AddRange(new string[] {
                 "Serial-COM" + item.Port,
-                "COM" + item.Port,
                 AppConfig.LoginUserName + "-COM" + item.Port,
                 "BMC-COM" + item.Port,
                 "BIOS-COM" + item.Port,
@@ -732,31 +834,12 @@ namespace COMReservation
                 "COM" + item.Port + "-SSP",
                 "COM" + item.Port + "-" + AppConfig.LoginUserName
             });
-            cboxSessionName.Text = "Serial-COM" + item.Port;
+
+            cboxSessionName.Text = item.SessionName;
             dtpExpireTime.Value = DateTime.Now + new TimeSpan(4, 0, 0);
 
-            if (AppConfig.LoginUserName == item.Owner)
-            {
-                btnReserve.Text = "-Release";
-                btnReserve.Enabled = true;
-                btnActionSecureCRT.Enabled = true;
-                groupCOMDetail.Enabled = false;
-                btnActionEditSave.Enabled = true;
-                btnActionWait.Enabled = false;
-            }
-            else
-            {
-                btnReserve.Text = "+Reserve";
-                btnReserve.Enabled = true;
-                btnActionSecureCRT.Enabled = false;
-                groupCOMDetail.Enabled = true;
-                btnActionEditSave.Enabled = false;
-                btnActionWait.Enabled = true;
-                if (m_currCOMIem.ContainsWait(AppConfig.LoginUserName))
-                    btnActionWait.Text = Properties.Resources.strActionWaitRemove;
-                else
-                    btnActionWait.Text = Properties.Resources.strActionWaitAdd;
-            }
+            RefreshSelectedComInfo();
+
         }
         private void listViewComTable_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -808,21 +891,27 @@ namespace COMReservation
             {
                 return true;
             }
-
+            else if (str == Properties.Resources.strFilterAvaiable
+                && item.Owner.Trim().Length == 0)
+            {
+                return true;
+            }
             return false;
         }
 
         private void cboxFilter_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (cboxFilter.Text != Properties.Resources.strFilterReservedByMe)
+                radioBtnReservedByMe.Checked = false;
+
+            if (cboxFilter.Text != Properties.Resources.strFilterAvaiable)
+                radioBtnAvaiable.Checked = false;
+
             RefreshCOMInfo();
         }
 
         private void cboxBaud_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (m_currCOMIem != null)
-            {
-                m_currCOMIem.StrBaud = cboxBaud.Text;
-            }
         }
 
         private void xpTable_CellClick(object sender, XPTable.Events.CellMouseEventArgs e)
@@ -836,6 +925,143 @@ namespace COMReservation
             CellPos endCellPos = new CellPos(selIndex, m_xpColumnModel.Columns.Count - 1);
 
             m_xpTableModel.Selections.SelectCells(startCellPos, endCellPos);
+        }
+
+
+        private void cboxSessionName_SelectedIndexChanged(object sender, EventArgs e)
+        {
+        }
+
+        private void radioBtnAvaiable_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioBtnAvaiable.Checked)
+                cboxFilter.Text = Properties.Resources.strFilterAvaiable;
+        }
+
+        private void radioBtnReservedByMe_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioBtnReservedByMe.Checked)
+            {
+                cboxFilter.Text = Properties.Resources.strFilterReservedByMe;
+            }
+        }
+
+        private void dtpExpireTime_ValueChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void cboxExpireTimeUnit_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            int min, max, step, setval;
+            if (cboxExpireTimeUnit.Text.StartsWith("Minute"))
+            {
+                min = 10;
+                step = 10;
+                max = 60;
+                setval = 30;
+
+            }
+            else if (cboxExpireTimeUnit.Text.StartsWith("Hour"))
+            {
+                min = 1;
+                step = 1;
+                max = 24;
+                setval = 6;
+            }
+            else
+            {
+                min = 1;
+                step = 1;
+                max = 30;
+                setval = 1;
+            }
+
+            cboxExpireTimeValue.Items.Clear();
+            for (int i = min; i <= max; i+=step)
+            {
+                cboxExpireTimeValue.Items.Add(i.ToString());
+            }
+            cboxExpireTimeValue.Text = setval.ToString();
+        }
+
+        private DateTime ParseExpireTime()
+        {
+            DateTime tnow = DateTime.Now;
+            DateTime tnew;
+            double val = double.Parse(cboxExpireTimeValue.Text);
+
+            if (cboxExpireTimeUnit.SelectedIndex == 0)
+            {
+                tnew = tnow.AddMinutes(val);
+            }
+            else if (cboxExpireTimeUnit.SelectedIndex == 1)
+            {
+                tnew = tnow.AddHours(val);
+            }
+            else
+            {
+                tnew = tnow.AddDays(val);
+            }
+
+            return tnew;
+        }
+
+        private void btnReleaseAll_Click(object sender, EventArgs e)
+        {
+            if (DialogResult.Yes == MessageBox.Show("Are you sure want to release all the COMs that you reserved?\n", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
+            {
+                COMHandle.ReleaseAllReservedByMe();
+            }
+        }
+
+        private void btnReschedule_Click(object sender, EventArgs e)
+        {
+            COMItem item = GetSelectedCOMItem();
+            if (item == null)
+                return;
+
+            item.ExpireTime = ParseExpireTime();
+        }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            COMItem item = GetSelectedCOMItem();
+            if (item == null)
+                return;
+
+            string name = null;
+            if (comboBox1.SelectedIndex == 0 || comboBox1.SelectedIndex == 1)
+                name = "Andy";
+            else
+                name = "Simon";
+
+            if (comboBox1.SelectedItem.ToString().StartsWith("Reserve"))
+            {
+                COMHandle.Reserve(item.Port, name, ParseExpireTime(), tboxDescription.Text);
+            }
+            else
+            {
+                COMHandle.Release(item.Port, name);
+            }
+
+            AppConfig.SaveComInfo();
+            if (item.RowInTable != null)
+            {
+#if USE_XPTABLE
+                item.RowInTable.Cells[COL_OWNER].Text = item.Owner;
+                item.RowInTable.Cells[COL_DESCRIPTION].Text = item.Description;
+                item.RowInTable.Cells[COL_BAUD].Text = item.StrBaud;
+                item.RowInTable.Cells[COL_REMAIN_TIME].Text = item.StrRemainTime;
+#else
+
+                comItem.RowInTable.SubItems[COL_OWNER].Text = comItem.Owner;
+                comItem.RowInTable.SubItems[COL_DESCRIPTION].Text = comItem.Description;
+                comItem.RowInTable.SubItems[COL_BAUD].Text = comItem.StrBaud;
+                comItem.RowInTable.SubItems[COL_REMAIN_TIME].Text = comItem.StrRemainTime;
+#endif
+            }
+            RefreshCOMInfo();
         }
     }
 }

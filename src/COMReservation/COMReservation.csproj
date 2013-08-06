@@ -68,6 +68,7 @@
     <Compile Include="FormSetting.Designer.cs">
       <DependentUpon>FormSetting.cs</DependentUpon>
     </Compile>
+    <Compile Include="HistoryWritter.cs" />
     <Compile Include="IReserveCOM.cs" />
     <Compile Include="ISettingEvent.cs" />
     <Compile Include="Program.cs" />
