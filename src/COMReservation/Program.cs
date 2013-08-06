@@ -23,6 +23,8 @@ namespace COMReservation
                 AppConfig.LoadGlobalConfig();
                 AppConfig.LoadPersonalConfig();
                 AppConfig.LoadComInfo();
+
+                HistoryWritter.Write("open the application.");
             }
             catch (Exception err)
             {

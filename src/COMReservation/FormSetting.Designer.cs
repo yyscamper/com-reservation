@@ -32,6 +32,7 @@
             this.tabAllSetting = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.cboxColorSchemes = new System.Windows.Forms.ComboBox();
             this.label12 = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
             this.btnPersonalSelectComReservedByOtherColor = new System.Windows.Forms.Button();
@@ -40,6 +41,7 @@
             this.btnPersonalSelectComAvaiableColor = new System.Windows.Forms.Button();
             this.label10 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
+            this.label17 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -55,20 +57,24 @@
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.label15 = new System.Windows.Forms.Label();
             this.btnGlobalBrowserHistoryDir = new System.Windows.Forms.Button();
-            this.tboxGlobalHistoryDir = new System.Windows.Forms.TextBox();
+            this.tboxGlobalHistoryFilePath = new System.Windows.Forms.TextBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.label14 = new System.Windows.Forms.Label();
             this.btnGlobalBrowserSecureCRTExeFile = new System.Windows.Forms.Button();
             this.tboxGlobalSecureCRTExeFilePath = new System.Windows.Forms.TextBox();
             this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.label16 = new System.Windows.Forms.Label();
-            this.btnToLeft = new System.Windows.Forms.Button();
-            this.btnToRight = new System.Windows.Forms.Button();
-            this.lboxSelectPorts = new System.Windows.Forms.ListBox();
+            this.btnClearPorts = new System.Windows.Forms.Button();
+            this.btnResumePort = new System.Windows.Forms.Button();
+            this.btnRemovePort = new System.Windows.Forms.Button();
+            this.lboxRemovedPorts = new System.Windows.Forms.ListBox();
             this.lboxPorts = new System.Windows.Forms.ListBox();
-            this.btnInit = new System.Windows.Forms.Button();
-            this.nudPortEnd = new System.Windows.Forms.NumericUpDown();
+            this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.nudPortStart = new System.Windows.Forms.NumericUpDown();
+            this.nudPortEnd = new System.Windows.Forms.NumericUpDown();
+            this.label16 = new System.Windows.Forms.Label();
+            this.tboxPortSingleAddInput = new System.Windows.Forms.TextBox();
+            this.btnPortsSingleAdd = new System.Windows.Forms.Button();
+            this.btnPortsRangeAdd = new System.Windows.Forms.Button();
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.labelContact = new System.Windows.Forms.Label();
@@ -80,6 +86,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.btnSave = new System.Windows.Forms.Button();
             this.btnCancle = new System.Windows.Forms.Button();
+            this.label18 = new System.Windows.Forms.Label();
+            this.tboxHistoryFolder = new System.Windows.Forms.TextBox();
             this.tabAllSetting.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -89,8 +97,9 @@
             this.groupBox4.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.tabPage3.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nudPortEnd)).BeginInit();
+            this.groupBox5.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudPortStart)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudPortEnd)).BeginInit();
             this.tabPage4.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -122,6 +131,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.cboxColorSchemes);
             this.groupBox1.Controls.Add(this.label12);
             this.groupBox1.Controls.Add(this.label11);
             this.groupBox1.Controls.Add(this.btnPersonalSelectComReservedByOtherColor);
@@ -130,6 +140,7 @@
             this.groupBox1.Controls.Add(this.btnPersonalSelectComAvaiableColor);
             this.groupBox1.Controls.Add(this.label10);
             this.groupBox1.Controls.Add(this.label13);
+            this.groupBox1.Controls.Add(this.label17);
             this.groupBox1.Controls.Add(this.label9);
             this.groupBox1.Location = new System.Drawing.Point(11, 141);
             this.groupBox1.Name = "groupBox1";
@@ -137,6 +148,14 @@
             this.groupBox1.TabIndex = 4;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Apperence";
+            // 
+            // cboxColorSchemes
+            // 
+            this.cboxColorSchemes.FormattingEnabled = true;
+            this.cboxColorSchemes.Location = new System.Drawing.Point(144, 47);
+            this.cboxColorSchemes.Name = "cboxColorSchemes";
+            this.cboxColorSchemes.Size = new System.Drawing.Size(121, 25);
+            this.cboxColorSchemes.TabIndex = 4;
             // 
             // label12
             // 
@@ -209,6 +228,15 @@
             this.label13.TabIndex = 0;
             this.label13.Text = "px";
             // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(9, 52);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(89, 17);
+            this.label17.TabIndex = 0;
+            this.label17.Text = "Color Scheme";
+            // 
             // label9
             // 
             this.label9.AutoSize = true;
@@ -259,6 +287,7 @@
             this.btnBrowserSessionDir.Name = "btnBrowserSessionDir";
             this.btnBrowserSessionDir.Size = new System.Drawing.Size(25, 23);
             this.btnBrowserSessionDir.TabIndex = 3;
+            this.btnBrowserSessionDir.Text = "...";
             this.btnBrowserSessionDir.UseVisualStyleBackColor = true;
             this.btnBrowserSessionDir.Click += new System.EventHandler(this.btnBrowserSessionDir_Click);
             // 
@@ -325,12 +354,14 @@
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.label18);
             this.groupBox4.Controls.Add(this.label15);
             this.groupBox4.Controls.Add(this.btnGlobalBrowserHistoryDir);
-            this.groupBox4.Controls.Add(this.tboxGlobalHistoryDir);
+            this.groupBox4.Controls.Add(this.tboxHistoryFolder);
+            this.groupBox4.Controls.Add(this.tboxGlobalHistoryFilePath);
             this.groupBox4.Location = new System.Drawing.Point(3, 57);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(568, 46);
+            this.groupBox4.Size = new System.Drawing.Size(568, 91);
             this.groupBox4.TabIndex = 6;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "History";
@@ -340,25 +371,26 @@
             this.label15.AutoSize = true;
             this.label15.Location = new System.Drawing.Point(5, 18);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(109, 17);
+            this.label15.Size = new System.Drawing.Size(114, 17);
             this.label15.TabIndex = 0;
-            this.label15.Text = "History Directory:";
+            this.label15.Text = "History File Name:";
             // 
             // btnGlobalBrowserHistoryDir
             // 
-            this.btnGlobalBrowserHistoryDir.Location = new System.Drawing.Point(536, 15);
+            this.btnGlobalBrowserHistoryDir.Location = new System.Drawing.Point(537, 49);
             this.btnGlobalBrowserHistoryDir.Name = "btnGlobalBrowserHistoryDir";
             this.btnGlobalBrowserHistoryDir.Size = new System.Drawing.Size(25, 23);
             this.btnGlobalBrowserHistoryDir.TabIndex = 3;
+            this.btnGlobalBrowserHistoryDir.Text = "...";
             this.btnGlobalBrowserHistoryDir.UseVisualStyleBackColor = true;
             this.btnGlobalBrowserHistoryDir.Click += new System.EventHandler(this.btnGlobalBrowserHistoryDir_Click);
             // 
-            // tboxGlobalHistoryDir
+            // tboxGlobalHistoryFilePath
             // 
-            this.tboxGlobalHistoryDir.Location = new System.Drawing.Point(121, 15);
-            this.tboxGlobalHistoryDir.Name = "tboxGlobalHistoryDir";
-            this.tboxGlobalHistoryDir.Size = new System.Drawing.Size(410, 23);
-            this.tboxGlobalHistoryDir.TabIndex = 1;
+            this.tboxGlobalHistoryFilePath.Location = new System.Drawing.Point(121, 17);
+            this.tboxGlobalHistoryFilePath.Name = "tboxGlobalHistoryFilePath";
+            this.tboxGlobalHistoryFilePath.Size = new System.Drawing.Size(410, 23);
+            this.tboxGlobalHistoryFilePath.TabIndex = 1;
             // 
             // groupBox3
             // 
@@ -375,7 +407,7 @@
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(5, 18);
+            this.label14.Location = new System.Drawing.Point(5, 20);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(96, 17);
             this.label14.TabIndex = 0;
@@ -383,110 +415,156 @@
             // 
             // btnGlobalBrowserSecureCRTExeFile
             // 
-            this.btnGlobalBrowserSecureCRTExeFile.Location = new System.Drawing.Point(536, 15);
+            this.btnGlobalBrowserSecureCRTExeFile.Location = new System.Drawing.Point(536, 17);
             this.btnGlobalBrowserSecureCRTExeFile.Name = "btnGlobalBrowserSecureCRTExeFile";
             this.btnGlobalBrowserSecureCRTExeFile.Size = new System.Drawing.Size(25, 23);
             this.btnGlobalBrowserSecureCRTExeFile.TabIndex = 3;
+            this.btnGlobalBrowserSecureCRTExeFile.Text = "...";
             this.btnGlobalBrowserSecureCRTExeFile.UseVisualStyleBackColor = true;
             this.btnGlobalBrowserSecureCRTExeFile.Click += new System.EventHandler(this.btnGlobalBrowserSecureCRTExeFile_Click);
             // 
             // tboxGlobalSecureCRTExeFilePath
             // 
-            this.tboxGlobalSecureCRTExeFilePath.Location = new System.Drawing.Point(118, 15);
+            this.tboxGlobalSecureCRTExeFilePath.Location = new System.Drawing.Point(118, 17);
             this.tboxGlobalSecureCRTExeFilePath.Name = "tboxGlobalSecureCRTExeFilePath";
             this.tboxGlobalSecureCRTExeFilePath.Size = new System.Drawing.Size(413, 23);
             this.tboxGlobalSecureCRTExeFilePath.TabIndex = 1;
             // 
             // tabPage3
             // 
-            this.tabPage3.Controls.Add(this.label16);
-            this.tabPage3.Controls.Add(this.btnToLeft);
-            this.tabPage3.Controls.Add(this.btnToRight);
-            this.tabPage3.Controls.Add(this.lboxSelectPorts);
+            this.tabPage3.Controls.Add(this.btnClearPorts);
+            this.tabPage3.Controls.Add(this.btnResumePort);
+            this.tabPage3.Controls.Add(this.btnRemovePort);
+            this.tabPage3.Controls.Add(this.lboxRemovedPorts);
             this.tabPage3.Controls.Add(this.lboxPorts);
-            this.tabPage3.Controls.Add(this.btnInit);
-            this.tabPage3.Controls.Add(this.nudPortEnd);
-            this.tabPage3.Controls.Add(this.nudPortStart);
+            this.tabPage3.Controls.Add(this.groupBox5);
             this.tabPage3.Location = new System.Drawing.Point(4, 26);
             this.tabPage3.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.tabPage3.Size = new System.Drawing.Size(582, 422);
             this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "Init";
+            this.tabPage3.Text = "Ports";
             this.tabPage3.UseVisualStyleBackColor = true;
+            this.tabPage3.Leave += new System.EventHandler(this.tabPage3_Leave);
             // 
-            // label16
+            // btnClearPorts
             // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(128, 18);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(13, 17);
-            this.label16.TabIndex = 5;
-            this.label16.Text = "-";
+            this.btnClearPorts.Location = new System.Drawing.Point(232, 376);
+            this.btnClearPorts.Name = "btnClearPorts";
+            this.btnClearPorts.Size = new System.Drawing.Size(52, 28);
+            this.btnClearPorts.TabIndex = 11;
+            this.btnClearPorts.Text = "Clear";
+            this.btnClearPorts.UseVisualStyleBackColor = true;
+            this.btnClearPorts.Click += new System.EventHandler(this.btnClearPorts_Click);
             // 
-            // btnToLeft
+            // btnResumePort
             // 
-            this.btnToLeft.Location = new System.Drawing.Point(121, 194);
-            this.btnToLeft.Name = "btnToLeft";
-            this.btnToLeft.Size = new System.Drawing.Size(26, 23);
-            this.btnToLeft.TabIndex = 4;
-            this.btnToLeft.Text = "<";
-            this.btnToLeft.UseVisualStyleBackColor = true;
+            this.btnResumePort.Location = new System.Drawing.Point(95, 159);
+            this.btnResumePort.Name = "btnResumePort";
+            this.btnResumePort.Size = new System.Drawing.Size(39, 28);
+            this.btnResumePort.TabIndex = 11;
+            this.btnResumePort.Text = "<<";
+            this.btnResumePort.UseVisualStyleBackColor = true;
+            this.btnResumePort.Click += new System.EventHandler(this.btnResumePort_Click);
             // 
-            // btnToRight
+            // btnRemovePort
             // 
-            this.btnToRight.Location = new System.Drawing.Point(121, 165);
-            this.btnToRight.Name = "btnToRight";
-            this.btnToRight.Size = new System.Drawing.Size(26, 23);
-            this.btnToRight.TabIndex = 4;
-            this.btnToRight.Text = ">";
-            this.btnToRight.UseVisualStyleBackColor = true;
-            this.btnToRight.Click += new System.EventHandler(this.btnToRight_Click);
+            this.btnRemovePort.Location = new System.Drawing.Point(95, 126);
+            this.btnRemovePort.Name = "btnRemovePort";
+            this.btnRemovePort.Size = new System.Drawing.Size(36, 27);
+            this.btnRemovePort.TabIndex = 11;
+            this.btnRemovePort.Text = ">>";
+            this.btnRemovePort.UseVisualStyleBackColor = true;
+            this.btnRemovePort.Click += new System.EventHandler(this.btnRemovePort_Click);
             // 
-            // lboxSelectPorts
+            // lboxRemovedPorts
             // 
-            this.lboxSelectPorts.FormattingEnabled = true;
-            this.lboxSelectPorts.ItemHeight = 17;
-            this.lboxSelectPorts.Location = new System.Drawing.Point(153, 54);
-            this.lboxSelectPorts.Name = "lboxSelectPorts";
-            this.lboxSelectPorts.Size = new System.Drawing.Size(88, 361);
-            this.lboxSelectPorts.TabIndex = 3;
+            this.lboxRemovedPorts.FormattingEnabled = true;
+            this.lboxRemovedPorts.ItemHeight = 17;
+            this.lboxRemovedPorts.Location = new System.Drawing.Point(137, 94);
+            this.lboxRemovedPorts.Name = "lboxRemovedPorts";
+            this.lboxRemovedPorts.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple;
+            this.lboxRemovedPorts.Size = new System.Drawing.Size(80, 310);
+            this.lboxRemovedPorts.TabIndex = 3;
+            this.lboxRemovedPorts.KeyDown += new System.Windows.Forms.KeyEventHandler(this.lboxPorts_KeyDown);
             // 
             // lboxPorts
             // 
             this.lboxPorts.FormattingEnabled = true;
             this.lboxPorts.ItemHeight = 17;
-            this.lboxPorts.Location = new System.Drawing.Point(20, 54);
+            this.lboxPorts.Location = new System.Drawing.Point(9, 94);
             this.lboxPorts.Name = "lboxPorts";
-            this.lboxPorts.Size = new System.Drawing.Size(95, 361);
+            this.lboxPorts.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple;
+            this.lboxPorts.Size = new System.Drawing.Size(80, 310);
             this.lboxPorts.TabIndex = 3;
+            this.lboxPorts.KeyDown += new System.Windows.Forms.KeyEventHandler(this.lboxPorts_KeyDown);
             // 
-            // btnInit
+            // groupBox5
             // 
-            this.btnInit.Location = new System.Drawing.Point(246, 13);
-            this.btnInit.Name = "btnInit";
-            this.btnInit.Size = new System.Drawing.Size(54, 26);
-            this.btnInit.TabIndex = 2;
-            this.btnInit.Text = "Init";
-            this.btnInit.UseVisualStyleBackColor = true;
-            this.btnInit.Click += new System.EventHandler(this.btnInit_Click);
-            // 
-            // nudPortEnd
-            // 
-            this.nudPortEnd.Location = new System.Drawing.Point(153, 16);
-            this.nudPortEnd.Name = "nudPortEnd";
-            this.nudPortEnd.Size = new System.Drawing.Size(87, 23);
-            this.nudPortEnd.TabIndex = 1;
-            this.nudPortEnd.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
+            this.groupBox5.Controls.Add(this.nudPortStart);
+            this.groupBox5.Controls.Add(this.nudPortEnd);
+            this.groupBox5.Controls.Add(this.label16);
+            this.groupBox5.Controls.Add(this.tboxPortSingleAddInput);
+            this.groupBox5.Controls.Add(this.btnPortsSingleAdd);
+            this.groupBox5.Controls.Add(this.btnPortsRangeAdd);
+            this.groupBox5.Location = new System.Drawing.Point(9, 2);
+            this.groupBox5.Name = "groupBox5";
+            this.groupBox5.Size = new System.Drawing.Size(208, 86);
+            this.groupBox5.TabIndex = 8;
+            this.groupBox5.TabStop = false;
             // 
             // nudPortStart
             // 
-            this.nudPortStart.Location = new System.Drawing.Point(20, 16);
+            this.nudPortStart.Location = new System.Drawing.Point(9, 17);
             this.nudPortStart.Name = "nudPortStart";
-            this.nudPortStart.Size = new System.Drawing.Size(95, 23);
+            this.nudPortStart.Size = new System.Drawing.Size(65, 23);
             this.nudPortStart.TabIndex = 1;
             this.nudPortStart.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
+            // 
+            // nudPortEnd
+            // 
+            this.nudPortEnd.Location = new System.Drawing.Point(86, 17);
+            this.nudPortEnd.Name = "nudPortEnd";
+            this.nudPortEnd.Size = new System.Drawing.Size(65, 23);
+            this.nudPortEnd.TabIndex = 1;
+            this.nudPortEnd.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(75, 22);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(13, 17);
+            this.label16.TabIndex = 5;
+            this.label16.Text = "-";
+            // 
+            // tboxPortSingleAddInput
+            // 
+            this.tboxPortSingleAddInput.Location = new System.Drawing.Point(9, 49);
+            this.tboxPortSingleAddInput.Name = "tboxPortSingleAddInput";
+            this.tboxPortSingleAddInput.Size = new System.Drawing.Size(142, 23);
+            this.tboxPortSingleAddInput.TabIndex = 9;
+            // 
+            // btnPortsSingleAdd
+            // 
+            this.btnPortsSingleAdd.Location = new System.Drawing.Point(157, 49);
+            this.btnPortsSingleAdd.Name = "btnPortsSingleAdd";
+            this.btnPortsSingleAdd.Size = new System.Drawing.Size(45, 26);
+            this.btnPortsSingleAdd.TabIndex = 10;
+            this.btnPortsSingleAdd.Text = "Add";
+            this.btnPortsSingleAdd.UseVisualStyleBackColor = true;
+            this.btnPortsSingleAdd.Click += new System.EventHandler(this.btnPortsSingleAdd_Click);
+            // 
+            // btnPortsRangeAdd
+            // 
+            this.btnPortsRangeAdd.Location = new System.Drawing.Point(157, 15);
+            this.btnPortsRangeAdd.Name = "btnPortsRangeAdd";
+            this.btnPortsRangeAdd.Size = new System.Drawing.Size(45, 26);
+            this.btnPortsRangeAdd.TabIndex = 10;
+            this.btnPortsRangeAdd.Text = "Init";
+            this.btnPortsRangeAdd.UseVisualStyleBackColor = true;
+            this.btnPortsRangeAdd.Click += new System.EventHandler(this.btnPortsRangeAdd_Click);
             // 
             // tabPage4
             // 
@@ -604,6 +682,22 @@
             this.btnCancle.UseVisualStyleBackColor = true;
             this.btnCancle.Click += new System.EventHandler(this.btnCancle_Click);
             // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Location = new System.Drawing.Point(25, 51);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(93, 17);
+            this.label18.TabIndex = 0;
+            this.label18.Text = "History Folder:";
+            // 
+            // tboxHistoryFolder
+            // 
+            this.tboxHistoryFolder.Location = new System.Drawing.Point(121, 48);
+            this.tboxHistoryFolder.Name = "tboxHistoryFolder";
+            this.tboxHistoryFolder.Size = new System.Drawing.Size(410, 23);
+            this.tboxHistoryFolder.TabIndex = 1;
+            // 
             // FormSetting
             // 
             this.AcceptButton = this.btnSave;
@@ -632,9 +726,10 @@
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             this.tabPage3.ResumeLayout(false);
-            this.tabPage3.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nudPortEnd)).EndInit();
+            this.groupBox5.ResumeLayout(false);
+            this.groupBox5.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudPortStart)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudPortEnd)).EndInit();
             this.tabPage4.ResumeLayout(false);
             this.tabPage4.PerformLayout();
             this.ResumeLayout(false);
@@ -650,13 +745,6 @@
         private System.Windows.Forms.TabPage tabPage4;
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Button btnCancle;
-        private System.Windows.Forms.NumericUpDown nudPortStart;
-        private System.Windows.Forms.NumericUpDown nudPortEnd;
-        private System.Windows.Forms.Button btnInit;
-        private System.Windows.Forms.Button btnToLeft;
-        private System.Windows.Forms.Button btnToRight;
-        private System.Windows.Forms.ListBox lboxSelectPorts;
-        private System.Windows.Forms.ListBox lboxPorts;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label2;
@@ -692,7 +780,22 @@
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.Button btnGlobalBrowserHistoryDir;
-        private System.Windows.Forms.TextBox tboxGlobalHistoryDir;
+        private System.Windows.Forms.TextBox tboxGlobalHistoryFilePath;
+        private System.Windows.Forms.ListBox lboxPorts;
+        private System.Windows.Forms.GroupBox groupBox5;
+        private System.Windows.Forms.NumericUpDown nudPortStart;
+        private System.Windows.Forms.NumericUpDown nudPortEnd;
         private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.ComboBox cboxColorSchemes;
+        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.ListBox lboxRemovedPorts;
+        private System.Windows.Forms.Button btnResumePort;
+        private System.Windows.Forms.Button btnRemovePort;
+        private System.Windows.Forms.Button btnPortsRangeAdd;
+        private System.Windows.Forms.TextBox tboxPortSingleAddInput;
+        private System.Windows.Forms.Button btnPortsSingleAdd;
+        private System.Windows.Forms.Button btnClearPorts;
+        private System.Windows.Forms.Label label18;
+        private System.Windows.Forms.TextBox tboxHistoryFolder;
     }
 }

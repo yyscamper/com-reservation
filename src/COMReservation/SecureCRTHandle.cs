@@ -83,6 +83,8 @@ namespace COMReservation
                 strb.Append("S:\"Custom Log Message Each Line\"=" + AppConfig.LogLineFormat + "\n");
             }
 
+            strb.Append("S:\"Color Scheme\"=" + AppConfig.CurrentColorScheme + "\n");
+
             try
             {
                 FileStream file = File.Create(filePath);

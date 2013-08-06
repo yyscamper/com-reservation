@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Xml;
 
@@ -26,10 +28,11 @@ namespace COMReservation
         private static string m_comInfoFilePath;
         private static string m_globalConfigFilePath;
         private static string m_personalConfigFilePath;
-        private static string m_historyFilePath;
-        private static string m_historyFolder = ".\\";
+        private static string m_historyFileName;
+        private static string m_historyFolder = "./history/";
         private static string m_logFilePath;
         private static string m_logLineFormat;
+        private static long m_historyBackupThreshold = 1024 * 1204;
 
         //System Environment
         private static string m_appName = "COM-Reservation";
@@ -39,13 +42,23 @@ namespace COMReservation
 
         //Colors
         private static Color m_colorComAvaiable = Color.White;
-        private static Color m_colorComReservedByMe = Color.Blue;
-        private static Color m_colorComReservedByOther = Color.Red;
+        private static Color m_colorComReservedByMeNotExpired = Color.LightGreen;
+        private static Color m_colorComReservedByOther = Color.SandyBrown;
+        private static Color m_colorComReservedByMeAndExpired = Color.Yellow;
+        private static Color m_colorComIllegal = Color.Red;
 
         //Others
-        private static string m_longTimeFormat = "yyyy-MM-dd hh:mm:ss";
+        private static string m_longTimeFormat = "yyyy-MM-dd HH:mm:ss";
         private static string m_shortTimeFormat = "MM/dd hh:mm";
         private static string[] m_freqBaudrates = new string[] { "4800", "9600", "19200", "38400", "115200", "380400" };
+        private static string[] m_allColorSchemes = new string[] { "Black / Cyan", "BLack / Floral White", "Floral / Dark Cyan", 
+                                        "Monochrome", "Traditional", "White / Black", "Windows", "Yellow / Black" };
+        private static string m_currentColorScheme = "";
+
+        private static DateTime m_preComInfoFileModifyTime = new DateTime(1, 1, 1, 1, 1, 1);
+
+        private static byte[] _key1 = { 0x34, 0x9B, 0xC0, 0x02, 0x79, 0xE0, 0x99, 0xFF, 0xAB, 0xC0, 0xAB, 0x89, 0x09, 0xCD, 0x98, 0xEF };
+        private static string m_strKey = "9q12otjj1q02,;[]ff2fpaj'";
 
         #region Constructor
 
@@ -59,12 +72,12 @@ namespace COMReservation
             m_secureCRTExeFilePath = "D:\\Program Files\\SecureCRT\\SecureCRT.exe";
             m_appDir = System.Environment.CurrentDirectory;
             m_appVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            m_historyFilePath = m_historyFolder + "com_history.log";
-            m_globalConfigFilePath = "./com_global_config.xml";
+            m_historyFileName = "com_history.log";
+            m_globalConfigFilePath = "./com_global_config.dat";
             //m_personalConfigFilePath = System.Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\com_reservation\\com_config.xml";
-            m_personalConfigFilePath = "./com_config.xml";
+            m_personalConfigFilePath = "./com_config_" + AppConfig.LoginUserName + ".xml";
             
-            m_comInfoFilePath = "./all_coms_info.xml";
+            m_comInfoFilePath = "./all_coms_info.dat";
             m_logFilePath = ".\\" + m_userLoginName + "\\%S-%Y%M%D-%h%m%s.log";
             m_logLineFormat = "[%h%m%s%t] ";
 
@@ -97,6 +110,17 @@ namespace COMReservation
         {
             get { return m_userLoginName; }
             set { m_userLoginName = value; }
+        }
+
+        static public string LoginUserDomain
+        {
+            get { return m_userDomainName; }
+            set { m_userDomainName = value; }
+        }
+
+        static public string LoginUserFullName
+        {
+            get { return m_userDomainName + "\\" + m_userLoginName; }
         }
 
         static public uint StartPort
@@ -142,10 +166,16 @@ namespace COMReservation
             set { m_colorComAvaiable = value; }
         }
 
-        static public Color ColorComReservedByMe
+        static public Color ColorComReservedByMeNotExpired
         {
-            get { return m_colorComReservedByMe; }
-            set { m_colorComReservedByMe = value; }
+            get { return m_colorComReservedByMeNotExpired; }
+            set { m_colorComReservedByMeNotExpired = value; }
+        }
+
+        static public Color ColorComReservedByMeExpired
+        {
+            get { return m_colorComReservedByMeAndExpired; }
+            set { m_colorComReservedByMeAndExpired = value; }
         }
 
         static public Color ColorComReservedByOther
@@ -154,10 +184,27 @@ namespace COMReservation
             set { m_colorComReservedByOther = value; }
         }
 
+        static public Color ColorComIllegal
+        {
+            get { return m_colorComIllegal; }
+            set { m_colorComIllegal = value; }
+        }
+
         static public uint DefaultBaud
         {
             get { return m_defaultBaudrate; }
             set { m_defaultBaudrate = value; }
+        }
+
+        static public string HistoryFilePath
+        {
+            get { return m_historyFolder + m_historyFileName; }
+        }
+
+        static public string HistoryFileName
+        {
+            get { return m_historyFileName; }
+            set { m_historyFileName = value; }
         }
 
         static public string HistoryFolder
@@ -166,24 +213,65 @@ namespace COMReservation
             set { m_historyFolder = value; }
         }
 
+        static public long HistoryBackupThreshold
+        {
+            get { return m_historyBackupThreshold; }
+            set { m_historyBackupThreshold = value; }
+        }
+
+
+        static public string[] ColorSchemeNames
+        {
+
+            get { return m_allColorSchemes; }
+        }
+
+        static public string CurrentColorScheme
+        {
+            get
+            {
+                if (!m_allColorSchemes.Contains(m_currentColorScheme))
+                    m_currentColorScheme = "Traditional";
+                return m_currentColorScheme;
+            }
+            set
+            {
+                if (!m_allColorSchemes.Contains(value))
+                    return;
+                else
+                    m_currentColorScheme = value;
+            }
+        }
+
+
         #endregion
 
         #region function_file_load_save
 
         static public void LoadComInfo()
         {
-            COMHandle.Clear();
+            //XmlDocument doc = LoadEncryptedXmlFile("./encrypteddata.dat");
+
+            int comIndex = 0;
+
+            if (m_preComInfoFileModifyTime == File.GetLastWriteTime(m_comInfoFilePath))
+                return;
+
+            m_preComInfoFileModifyTime = File.GetLastWriteTime(m_comInfoFilePath);
 
             try
             {
-                XmlDocument xmlDoc = new XmlDocument();
-                xmlDoc.Load(m_comInfoFilePath);
+                //XmlDocument xmlDoc = new XmlDocument();
+                //xmlDoc.Load(m_comInfoFilePath);
+                XmlDocument xmlDoc = LoadEncryptedXmlFile(m_comInfoFilePath);
+
                 XmlNodeList nodeList = xmlDoc.SelectSingleNode(m_appName).ChildNodes;
                 foreach (XmlElement elem in nodeList)
                 {
                     if (elem.Name == "com_list")
                     {
                         XmlNodeList comNodeList = elem.ChildNodes;
+                        COMHandle.Clear();
                         foreach (XmlElement comNode in comNodeList)
                         {
                             string comName = comNode.Name;
@@ -200,13 +288,39 @@ namespace COMReservation
                                 if (comNode.HasAttribute("expire_time"))
                                     comItem.ExpireTime = DateTime.ParseExact(comNode.GetAttribute("expire_time"),
                                                             m_longTimeFormat, null, System.Globalization.DateTimeStyles.AllowInnerWhite);
+                                
+                                if (comNode.HasAttribute("session_name"))
+                                {
+                                    comItem.SessionName = comNode.GetAttribute("session_name");
+                                }
+                                if (comItem.SessionName.Trim().Length == 0)
+                                {
+                                    comItem.SessionName = "Serial-COM" + port;
+                                }
+                                
                                 if (comNode.HasAttribute("process_id"))
+                                {
                                     comItem.ProcessId = int.Parse(comNode.GetAttribute("process_id"));
+
+                                    if (comItem.ProcessId != COMItem.PROCESS_ID_INVALID)
+                                    {
+                                        try
+                                        {
+                                            Process proc = Process.GetProcessById(comItem.ProcessId);
+                                        }
+                                        catch
+                                        {
+                                            comItem.ProcessId = COMItem.PROCESS_ID_INVALID;
+                                            comItem.ExpireTime = DateTime.Now;
+                                        }
+                                    }
+                                }
+                                comItem.Index = comIndex++;
                                 COMHandle.Add(comItem);
                             }
-                            catch
+                            catch (Exception err)
                             {
-                                //continue;
+                                throw err;
                             }
                         }
 
@@ -221,7 +335,7 @@ namespace COMReservation
             }
             catch (Exception err)
             {
-                //throw err;
+                throw err;
             }
         }
 
@@ -247,13 +361,15 @@ namespace COMReservation
             XmlElement comNode = xmlDoc.CreateElement("com_list");
             rootNode.AppendChild(comNode);
 
-            SortedList allComs = COMHandle.AllCOMs;
+            SortedList<uint, COMItem> allComs = COMHandle.AllCOMs;
             foreach (COMItem comItem in allComs.Values)
             {
                 node = xmlDoc.CreateElement("COM" + comItem.Port);
                 node.SetAttribute("owner", comItem.Owner);
+                node.SetAttribute("session_name", comItem.SessionName);
                 node.SetAttribute("group", comItem.Group);
                 node.SetAttribute("priority", ((int)(comItem.Priority)).ToString());
+                string ttest = comItem.ExpireTime.ToString(m_longTimeFormat);
                 node.SetAttribute("expire_time", comItem.ExpireTime.ToString(m_longTimeFormat));
                 node.SetAttribute("description", comItem.Description);
                 node.SetAttribute("wait_list", comItem.WaitListString);
@@ -263,7 +379,9 @@ namespace COMReservation
 
             try
             {
-                xmlDoc.Save(m_comInfoFilePath);
+                //xmlDoc.Save(m_comInfoFilePath);
+
+                WriteEncryptedXmlFile(xmlDoc, m_comInfoFilePath);
             }
             catch (Exception err)
             {
@@ -277,8 +395,112 @@ namespace COMReservation
 
         }
 
+        static private byte[] EncryptData(byte[] plainText, string strKey)
+        {
+            SymmetricAlgorithm des = Rijndael.Create();
+            des.Key = Encoding.UTF8.GetBytes(strKey);
+            des.IV = _key1;
+            MemoryStream ms = new MemoryStream();
+            CryptoStream cs = new CryptoStream(ms, des.CreateEncryptor(), CryptoStreamMode.Write);
+            cs.Write(plainText, 0, plainText.Length);
+            cs.FlushFinalBlock();
+            byte[] cipherBytes = ms.ToArray();//得到加密后的字节数组  
+            cs.Close();
+            ms.Close();
+            return cipherBytes;
+        }
+
+        static private byte[] EncryptData(string plainText, string strKey)
+        {
+            SymmetricAlgorithm des = Rijndael.Create();
+            byte[] inputByteArray = Encoding.UTF8.GetBytes(plainText);   
+            des.Key = Encoding.UTF8.GetBytes(strKey);
+            des.IV = _key1;
+            MemoryStream ms = new MemoryStream();
+            CryptoStream cs = new CryptoStream(ms, des.CreateEncryptor(), CryptoStreamMode.Write);
+            cs.Write(inputByteArray, 0, inputByteArray.Length);
+            cs.FlushFinalBlock();
+            byte[] cipherBytes = ms.ToArray();//得到加密后的字节数组  
+            cs.Close();
+            ms.Close();
+            return cipherBytes; 
+        }
+
+        static public byte[] DecryptData(byte[] cipherText, string strKey)
+        {
+            SymmetricAlgorithm des = Rijndael.Create();
+            des.Key = Encoding.UTF8.GetBytes(strKey);
+            des.IV = _key1;
+            byte[] decryptBytes = new byte[cipherText.Length];
+            MemoryStream ms = new MemoryStream(cipherText);
+            CryptoStream cs = new CryptoStream(ms, des.CreateDecryptor(), CryptoStreamMode.Read);
+            cs.Read(decryptBytes, 0, decryptBytes.Length);
+            cs.Close();
+            ms.Close();
+            return decryptBytes;
+        }  
+
+        static private void WriteEncryptedXmlFile(XmlDocument doc, string filePath)
+        {
+            StringWriter sw = null;
+            XmlTextWriter tx = null;
+            FileStream fs = null;
+            BinaryWriter bw = null;
+
+            try
+            {
+                sw = new StringWriter();
+                tx = new XmlTextWriter(sw);
+                doc.WriteTo(tx);
+                string strXmlText = sw.ToString();
+                byte[] cipherData = EncryptData(strXmlText, m_strKey);
+                fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write);
+                bw = new BinaryWriter(fs);
+                bw.Write(cipherData);
+                bw.Flush();
+
+                doc.Save(filePath + ".xml");
+            }
+            catch (Exception err)
+            {
+                throw err;
+            }
+            finally
+            {
+                if (sw != null)
+                    sw.Close();
+                if (tx != null)
+                    tx.Close();
+                if (fs != null)
+                    fs.Close();
+                if (bw != null)
+                    bw.Close();
+            }
+        }
+
+        static private XmlDocument LoadEncryptedXmlFile(string filePath)
+        {
+            FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            BinaryReader br = new BinaryReader(fs);
+            byte[] data = new byte[fs.Length];
+            if (data.Length != br.Read(data, 0, data.Length))
+            {
+                throw new XmlException("Don't read enough data for decrypt!");
+            }
+
+            byte[] deData = DecryptData(data, m_strKey);
+            string xmlStr = Encoding.UTF8.GetString(deData);
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.LoadXml(xmlStr);
+
+            br.Close();
+            fs.Close();
+            return xmlDoc;
+        }
+
         static public void LoadPersonalConfig()
         {
+           
             try
             {
                 XmlDocument xmlDoc = new XmlDocument();
@@ -306,18 +528,27 @@ namespace COMReservation
                     {
                         m_logLineFormat = elem.InnerText;
                     }
+                    else if (elem.Name == "current_color_scheme")
+                    {
+                        m_currentColorScheme = elem.InnerText;
+                    }
                     else if (elem.Name == "color_com_avaiable")
                     {
                         m_colorComAvaiable = ColorTranslator.FromHtml(elem.InnerText);
                     }
                     else if (elem.Name == "color_com_reserved_by_me")
                     {
-                        m_colorComReservedByMe = ColorTranslator.FromHtml(elem.InnerText);
+                        m_colorComReservedByMeNotExpired = ColorTranslator.FromHtml(elem.InnerText);
                     }
                     else if (elem.Name == "color_com_reserved_by_others")
                     {
                         m_colorComReservedByOther = ColorTranslator.FromHtml(elem.InnerText);
                     }
+                    else if (elem.Name == "color_com_illegal")
+                    {
+                        m_colorComIllegal = ColorTranslator.FromHtml(elem.InnerText);
+                    }
+
 
                 }
             }
@@ -358,16 +589,24 @@ namespace COMReservation
             node.InnerText = m_logLineFormat;
             rootNode.AppendChild(node);
 
+            node = xmlDoc.CreateElement("current_color_scheme");
+            node.InnerText = m_currentColorScheme;
+            rootNode.AppendChild(node);
+
             node = xmlDoc.CreateElement("color_com_avaiable");
             node.InnerText = ColorTranslator.ToHtml(m_colorComAvaiable);
             rootNode.AppendChild(node);
 
             node = xmlDoc.CreateElement("color_com_reserved_by_me");
-            node.InnerText = ColorTranslator.ToHtml(m_colorComReservedByMe);
+            node.InnerText = ColorTranslator.ToHtml(m_colorComReservedByMeNotExpired);
             rootNode.AppendChild(node);
 
             node = xmlDoc.CreateElement("color_com_reserved_by_others");
             node.InnerText = ColorTranslator.ToHtml(m_colorComReservedByOther);
+            rootNode.AppendChild(node);
+
+            node = xmlDoc.CreateElement("color_com_illegal");
+            node.InnerText = ColorTranslator.ToHtml(m_colorComIllegal);
             rootNode.AppendChild(node);
 
             try
@@ -385,8 +624,7 @@ namespace COMReservation
         {
             try
             {
-                XmlDocument xmlDoc = new XmlDocument();
-                xmlDoc.Load(m_globalConfigFilePath);
+                XmlDocument xmlDoc = LoadEncryptedXmlFile(m_globalConfigFilePath);
                 XmlNodeList nodeList = xmlDoc.SelectSingleNode(m_appName).ChildNodes;
                 foreach (XmlElement elem in nodeList)
                 {
@@ -396,7 +634,11 @@ namespace COMReservation
                     }
                     else if (elem.Name == "history_folder")
                     {
-                        m_historyFilePath = elem.InnerText;
+                        m_historyFolder = elem.InnerText;
+                    }
+                    else if (elem.Name == "history_file_name")
+                    {
+                        m_historyFileName = elem.InnerText;
                     }
                 }
             }
@@ -422,12 +664,17 @@ namespace COMReservation
             rootNode.AppendChild(node);
 
             node = xmlDoc.CreateElement("history_folder");
-            node.InnerText = m_historyFilePath;
+            node.InnerText = m_historyFolder;
+            rootNode.AppendChild(node);
+
+            node = xmlDoc.CreateElement("history_file_name");
+            node.InnerText = m_historyFileName;
             rootNode.AppendChild(node);
 
             try
             {
-                xmlDoc.Save(m_globalConfigFilePath);
+                //xmlDoc.Save(m_globalConfigFilePath);
+                WriteEncryptedXmlFile(xmlDoc, m_globalConfigFilePath);
             }
             catch (Exception err)
             {
