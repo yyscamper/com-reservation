@@ -30,6 +30,7 @@ namespace COMReservation
         private string          m_sessionName = "";
         private uint            m_baud = 115200;
         private int             m_index = 0;
+        private ProcessFileHandle m_fileHandle = null;
 
 #if USE_XPTABLE
         private Row             m_rowInTable = null;
@@ -161,12 +162,30 @@ namespace COMReservation
             }
         }
 
+        public string[] FileHandles
+        {
+            get
+            {
+                if (m_fileHandle != null)
+                {
+                    ArrayList al = m_fileHandle.GetComFileHandle();
+                    if (al != null)
+                    {
+                        string[] arr = new string[al.Count];
+                        al.CopyTo(arr);
+                        return arr;
+                    }
+                }
+                return null;
+            }
+        }
 
         public int ProcessId
         {
             get { return m_processId; }
             set 
             {
+                m_fileHandle = null;
                 int procId = value;
                 try
                 {
@@ -177,6 +196,7 @@ namespace COMReservation
                     if (proc.ProcessName.Contains("SecureCRT"))
                     {
                         m_processId = value;
+                        m_fileHandle = new ProcessFileHandle(m_processId);
                     }
                     else
                     {
@@ -213,7 +233,18 @@ namespace COMReservation
                 if (proc == null)
                     return "";
                 else
-                    return proc.ProcessName + " " +  proc.Id.ToString() + "(" + proc.Threads.Count.ToString() + ")";
+                {
+                    string handleCnt = "?";
+                    if (m_fileHandle != null)
+                    {
+                        ArrayList list = m_fileHandle.GetComFileHandle();
+                        if (list != null)
+                        {
+                            handleCnt = list.Count.ToString();
+                        }
+                    }
+                    return proc.ProcessName + " " + proc.Id.ToString() + "(" + handleCnt + ")";
+                }
             }
         }
 

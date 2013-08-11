@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 #if USE_XPTABLE
 using XPTable.Models;
+using XPTable.Events;
 #endif
 
 namespace COMReservation
@@ -79,6 +80,8 @@ namespace COMReservation
             m_xpTable.FullRowSelect = true;
             m_xpTableModel.RowHeight = AppConfig.COMListRowHeight;
             m_xpTable.CellClick += new XPTable.Events.CellMouseEventHandler(xpTable_CellClick);
+            m_xpTable.CellMouseHover += new XPTable.Events.CellMouseEventHandler(xpTable_CellMouseHover);
+            m_xpTable.HoverTime = 500;
 #else
             
             listViewComTable.Columns.Add("Port", 40);
@@ -111,6 +114,25 @@ namespace COMReservation
             UpdateStyles();
         }
 
+
+        private void xpTable_CellMouseHover(object sender, CellMouseEventArgs e)
+        {
+            if (e.CellPos.Column == COL_PROCESS_INFO)
+            {
+                uint port = uint.Parse(m_xpTable.TableModel.Rows[e.CellPos.Row].Cells[COL_PORT].Text);
+                COMItem item = COMHandle.FindCOM(port);
+                string[] fileHandles = item.FileHandles;
+                if (fileHandles == null || fileHandles.Length <= 0)
+                    return;
+
+                ContextMenuStrip hoverMenu = new ContextMenuStrip();
+                for (int i = 0; i < fileHandles.Length; i++)
+                {
+                    hoverMenu.Items.Add(fileHandles[i]);
+                }
+                hoverMenu.Show(m_xpTable, m_xpTable.Location.X + m_xpTable.Width - 200, m_xpTable.Location.Y + m_xpTable.RowHeight * e.CellPos.Row - 10);
+            }
+        }
 
         private void FormMain_Load(object sender, EventArgs e)
         {

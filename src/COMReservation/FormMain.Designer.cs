@@ -55,6 +55,8 @@
             this.lableLogFilePathHelp = new System.Windows.Forms.Label();
             this.cboxCreateInTab = new System.Windows.Forms.CheckBox();
             this.groupActionButton = new System.Windows.Forms.GroupBox();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.btnReschedule = new System.Windows.Forms.Button();
             this.btnReleaseAll = new System.Windows.Forms.Button();
             this.groupFilter = new System.Windows.Forms.GroupBox();
             this.radioBtnReservedByMe = new System.Windows.Forms.RadioButton();
@@ -71,8 +73,6 @@
             this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem7 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem8 = new System.Windows.Forms.ToolStripMenuItem();
-            this.btnReschedule = new System.Windows.Forms.Button();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.groupCOMDetail.SuspendLayout();
             this.groupActionButton.SuspendLayout();
             this.groupFilter.SuspendLayout();
@@ -363,6 +363,30 @@
             this.groupActionButton.TabIndex = 6;
             this.groupActionButton.TabStop = false;
             // 
+            // comboBox1
+            // 
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Items.AddRange(new object[] {
+            "Reserve 1",
+            "Release 1",
+            "Reserve 2",
+            "Release 2"});
+            this.comboBox1.Location = new System.Drawing.Point(6, 100);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(121, 25);
+            this.comboBox1.TabIndex = 7;
+            this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
+            // 
+            // btnReschedule
+            // 
+            this.btnReschedule.Location = new System.Drawing.Point(140, 52);
+            this.btnReschedule.Name = "btnReschedule";
+            this.btnReschedule.Size = new System.Drawing.Size(128, 33);
+            this.btnReschedule.TabIndex = 6;
+            this.btnReschedule.Text = "Re-Schedule";
+            this.btnReschedule.UseVisualStyleBackColor = true;
+            this.btnReschedule.Click += new System.EventHandler(this.btnReschedule_Click);
+            // 
             // btnReleaseAll
             // 
             this.btnReleaseAll.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
@@ -503,30 +527,6 @@
             this.toolStripMenuItem8.Size = new System.Drawing.Size(243, 22);
             this.toolStripMenuItem8.Text = "%% - percent (%)";
             // 
-            // btnReschedule
-            // 
-            this.btnReschedule.Location = new System.Drawing.Point(140, 52);
-            this.btnReschedule.Name = "btnReschedule";
-            this.btnReschedule.Size = new System.Drawing.Size(128, 33);
-            this.btnReschedule.TabIndex = 6;
-            this.btnReschedule.Text = "Re-Schedule";
-            this.btnReschedule.UseVisualStyleBackColor = true;
-            this.btnReschedule.Click += new System.EventHandler(this.btnReschedule_Click);
-            // 
-            // comboBox1
-            // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Items.AddRange(new object[] {
-            "Reserve 1",
-            "Release 1",
-            "Reserve 2",
-            "Release 2"});
-            this.comboBox1.Location = new System.Drawing.Point(6, 100);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(121, 25);
-            this.comboBox1.TabIndex = 7;
-            this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
-            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
@@ -538,7 +538,9 @@
             this.Controls.Add(this.groupCOMDetail);
             this.Controls.Add(this.groupActionButton);
             this.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Margin = new System.Windows.Forms.Padding(4);
+            this.MaximizeBox = false;
             this.Name = "FormMain";
             this.Text = "COM Reservation";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormMain_FormClosing);
