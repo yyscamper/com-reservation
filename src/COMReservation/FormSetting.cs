@@ -29,15 +29,8 @@ namespace COMReservation
 
         }
 
-        private void FormSetting_Load(object sender, EventArgs e)
+        private void TabPersonalInit()
         {
-            nudPortStart.Minimum = 1;
-            nudPortStart.Maximum = 1000;
-            nudPortStart.Value = 1;
-            nudPortEnd.Minimum = 1;
-            nudPortEnd.Maximum = 1000;
-            nudPortEnd.Value = 100;
-
             tboxPersonalLogFilePath.Text = AppConfig.LogFilePath;
             tboxPersonalSeesionDir.ReadOnly = true;
             tboxPersonalLogLineFormat.Text = AppConfig.LogLineFormat;
@@ -46,31 +39,56 @@ namespace COMReservation
             cboxPersonalDefaultBaudrate.Items.AddRange(AppConfig.FreqBaudrates);
             cboxPersonalDefaultBaudrate.Text = AppConfig.DefaultBaud.ToString();
 
-            tboxGlobalSecureCRTExeFilePath.Text = AppConfig.SecureCRTExeFilePath;
-            tboxGlobalSecureCRTExeFilePath.ReadOnly = true;
-            tboxGlobalHistoryFilePath.Text = AppConfig.HistoryFileName;
-            tboxHistoryFolder.Text = AppConfig.HistoryFolder;
-
             btnPersonalSelectComAvaiableColor.BackColor = AppConfig.ColorComAvaiable;
             btnPersonalSelectComReservedByMeColor.BackColor = AppConfig.ColorComReservedByMeNotExpired;
             btnPersonalSelectComReservedByOtherColor.BackColor = AppConfig.ColorComReservedByOther;
 
-            nudComListRowHeight.Minimum = 1;
-            nudComListRowHeight.Maximum = 1024;
             nudComListRowHeight.Value = AppConfig.COMListRowHeight;
 
-            cboxColorSchemes.Items.AddRange(AppConfig.ColorSchemeNames);
             cboxColorSchemes.Text = AppConfig.CurrentColorScheme;
+        }
 
-            Version appVer = new Version(Application.ProductVersion);
-            labelVersion.Text = appVer.ToString();
+        private void TabGlobalInit()
+        {
+            tboxGlobalSecureCRTExeFilePath.Text = AppConfig.SecureCRTExeFilePath;
+            tboxGlobalSecureCRTExeFilePath.ReadOnly = true;
+            tboxGlobalHistoryFilePath.Text = AppConfig.HistoryFileName;
+            tboxHistoryFolder.Text = AppConfig.HistoryFolder;
+        }
 
+        private void TabComInfoInit()
+        {
+            nudPortStart.Minimum = 1;
+            nudPortStart.Maximum = 1000;
+            nudPortStart.Value = 1;
+            nudPortEnd.Minimum = 1;
+            nudPortEnd.Maximum = 1000;
+            nudPortEnd.Value = 100;
+            
             SortedList<uint, COMItem> allComs = COMHandle.AllCOMs;
+            m_selectedPorts.Clear();
+            m_removedPorts.Clear();
             foreach (COMItem item in allComs.Values)
             {
                 m_selectedPorts.Add(item.Port, item);
             }
             RefreshComPortsListBoxes();
+        }
+
+        private void FormSetting_Load(object sender, EventArgs e)
+        {
+            cboxColorSchemes.Items.AddRange(AppConfig.ColorSchemeNames);
+            nudComListRowHeight.Minimum = 1;
+            nudComListRowHeight.Maximum = 1024;
+
+            TabPersonalInit();
+            TabGlobalInit();
+            TabComInfoInit();
+
+            Version appVer = new Version(Application.ProductVersion);
+            labelVersion.Text = appVer.ToString();
+
+
         }
 
         private void RefreshComPortsListBoxes()
@@ -349,6 +367,31 @@ namespace COMReservation
             }
 
             tboxHistoryFolder.Text = fbd.SelectedPath;
+        }
+
+        private void btnRestoreDefault_Click(object sender, EventArgs e)
+        {
+            if (DialogResult.Yes != MessageBox.Show("Are you sure want to restore the default setting for " + tabAllSetting.SelectedTab.Text + "?", 
+                "Confirm Restore Default", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
+            {
+                return;
+            }
+
+            if (tabAllSetting.SelectedIndex == 0) //Personal Config
+            {
+                AppConfig.RestoreDefaultPersonalConfig();
+                TabPersonalInit();
+            }
+            else if (tabAllSetting.SelectedIndex == 1) //Global Config
+            {
+                AppConfig.RestoreDefaultGlobalConfig();
+                TabGlobalInit();
+            }
+            else if (tabAllSetting.SelectedIndex == 2) //Com Info
+            {
+                AppConfig.RestoreDefaultComInfo();
+                TabComInfoInit();
+            }
         }
     }
 }

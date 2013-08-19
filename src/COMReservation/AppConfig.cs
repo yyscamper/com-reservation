@@ -28,8 +28,8 @@ namespace COMReservation
         private static string m_comInfoFilePath;
         private static string m_globalConfigFilePath;
         private static string m_personalConfigFilePath;
-        private static string m_historyFileName;
-        private static string m_historyFolder = "./history/";
+        private static string m_historyFileName = "com_history.log";
+        private static string m_historyFolder = ".\\history\\";
         private static string m_logFilePath;
         private static string m_logLineFormat;
         private static long m_historyBackupThreshold = 1024 * 1204;
@@ -57,29 +57,118 @@ namespace COMReservation
 
         private static DateTime m_preComInfoFileModifyTime = new DateTime(1, 1, 1, 1, 1, 1);
 
+#if ENABLE_ENCRYPTED_FILE
         private static byte[] _key1 = { 0x34, 0x9B, 0xC0, 0x02, 0x79, 0xE0, 0x99, 0xFF, 0xAB, 0xC0, 0xAB, 0x89, 0x09, 0xCD, 0x98, 0xEF };
         private static string m_strKey = "9q12otjj1q02,;[]ff2fpaj'";
+#endif
 
         #region Constructor
 
+        static string FindAvaiableSecureCRTExePath()
+        {
+            if (File.Exists(m_secureCRTExeFilePath))
+                return m_secureCRTExeFilePath;
+
+            string[] strFonts = new string[] {
+                        System.Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                        System.Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                        "D:\\Program Files\\",
+                        System.Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)};
+
+            string[] strRears = new string[] {"\\VanDyke Software\\Clients\\SecureCRT.exe",
+                                              "\\SecureCRT\\SecureCRT.exe",
+                                              "\\VanDyke\\SecureCRT\\SecureCRT.exe",
+                                              "\\VanDyke Software\\SecureCRT\\SecureCRT.exe"};
+
+            foreach (string sf in strFonts)
+            {
+                foreach (string sr in strRears)
+                {
+                    string s = sf + sr;
+                    if (File.Exists(s))
+                        return s;
+                }
+            }
+
+            return m_secureCRTExeFilePath;
+        }
+
+        static public void RestoreDefaultPersonalConfig(bool saveFlag = true)
+        {
+            m_secureCRTSessionDir = System.Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\VanDyke\\Config\\Sessions";
+            m_logFilePath = ".\\" + m_userLoginName + "\\%S-%Y%M%D-%h%m%s.log";
+            m_logLineFormat = "[%h%m%s%t] ";
+
+            m_colorComAvaiable = Color.White;
+            m_colorComReservedByMeNotExpired = Color.LightGreen;
+            m_colorComReservedByOther = Color.SandyBrown;
+            m_colorComReservedByMeAndExpired = Color.Yellow;
+            m_colorComIllegal = Color.Red;
+
+            m_comListRowHeight = 28;
+            m_defaultBaudrate = 115200;
+            m_currentColorScheme = "Traditional";
+
+            if (saveFlag)
+                SavePersonalConfig();
+        }
+
+        static public void RestoreDefaultGlobalConfig(bool saveFlag = true)
+        {   
+            m_secureCRTExeFilePath = FindAvaiableSecureCRTExePath();
+            m_historyFileName = "com_history.log";
+            m_historyFolder = "./history/";
+
+            if (saveFlag)
+                SaveGlobalConfig();
+        }
+
+        static public void RestoreDefaultComInfo(bool saveFlag = true)
+        {
+            m_portStart = 1;
+            m_portEnd = 100;
+            COMHandle.Clear();
+
+            if (saveFlag)
+                SaveComInfo();
+        }
+
+        static private void CreateDirs()
+        {
+            if (!Directory.Exists("./global"))
+            {
+                Directory.CreateDirectory("./global");
+            }
+
+            if (!Directory.Exists("./personal"))
+            {
+                Directory.CreateDirectory("./personal");
+            }
+        }
+
         static AppConfig()
         {
+            CreateDirs();
+
             m_userLoginName = System.Environment.UserName;
             m_userDomainName = System.Environment.UserDomainName;
 
             m_secureCRTSessionDir = System.Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\VanDyke\\Config\\Sessions";
             //m_secureCRTExeFilePath = System.Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles) + "\\SecureCRT\\SecureCRT.exe";
-            m_secureCRTExeFilePath = "D:\\Program Files\\SecureCRT\\SecureCRT.exe";
+
             m_appDir = System.Environment.CurrentDirectory;
             m_appVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            m_historyFileName = "com_history.log";
-            m_globalConfigFilePath = "./com_global_config.dat";
-            //m_personalConfigFilePath = System.Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\com_reservation\\com_config.xml";
-            m_personalConfigFilePath = "./com_config_" + AppConfig.LoginUserName + ".xml";
             
-            m_comInfoFilePath = "./all_coms_info.dat";
-            m_logFilePath = ".\\" + m_userLoginName + "\\%S-%Y%M%D-%h%m%s.log";
-            m_logLineFormat = "[%h%m%s%t] ";
+            m_globalConfigFilePath = "./global/com_global_config.dat";
+            //m_personalConfigFilePath = System.Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\com_reservation\\com_config.xml";
+            m_personalConfigFilePath = "./personal/com_config_" + AppConfig.LoginUserName + ".dat";
+            
+            m_comInfoFilePath = "./global/all_coms_info.dat";
+
+            RestoreDefaultGlobalConfig(false);
+            RestoreDefaultPersonalConfig(false);
+            RestoreDefaultComInfo(false);
+
 
             /*
             COMHandle.Add(new COMItem(1, "YuanYu", COMPriority.HIGH, "BC_GROUP", "For random", new DateTime(2013, 5, 17, 14, 59, 0)));
@@ -203,13 +292,25 @@ namespace COMReservation
 
         static public string HistoryFileName
         {
-            get { return m_historyFileName; }
+            get 
+            {
+                if (m_historyFileName.Trim().Length == 0)
+                    return "com_history.log";
+                else
+                    return m_historyFileName;
+            }
             set { m_historyFileName = value; }
         }
 
         static public string HistoryFolder
         {
-            get { return m_historyFolder; }
+            get
+            {
+                if (m_historyFolder.Trim().Length == 0)
+                    return ".\\history\\";
+                else
+                    return m_historyFolder;
+            }
             set { m_historyFolder = value; }
         }
 
@@ -263,8 +364,12 @@ namespace COMReservation
             {
                 //XmlDocument xmlDoc = new XmlDocument();
                 //xmlDoc.Load(m_comInfoFilePath);
+#if ENABLE_ENCRYPTED_FILE
                 XmlDocument xmlDoc = LoadEncryptedXmlFile(m_comInfoFilePath);
-
+#else
+                  XmlDocument xmlDoc = new XmlDocument();
+                  xmlDoc.Load(m_comInfoFilePath);
+#endif
                 XmlNodeList nodeList = xmlDoc.SelectSingleNode(m_appName).ChildNodes;
                 foreach (XmlElement elem in nodeList)
                 {
@@ -341,6 +446,8 @@ namespace COMReservation
 
         static public void SaveComInfo()
         {
+            CreateDirs();
+
             XmlDocument xmlDoc = new XmlDocument();
             xmlDoc.CreateXmlDeclaration("1.0", "utf-8", null);
             XmlElement rootNode = xmlDoc.CreateElement(m_appName);
@@ -380,8 +487,11 @@ namespace COMReservation
             try
             {
                 //xmlDoc.Save(m_comInfoFilePath);
-
+#if ENABLE_ENCRYPTED_FILE
                 WriteEncryptedXmlFile(xmlDoc, m_comInfoFilePath);
+#else
+               xmlDoc.Save(m_comInfoFilePath);
+#endif
             }
             catch (Exception err)
             {
@@ -395,6 +505,7 @@ namespace COMReservation
 
         }
 
+#if ENABLE_ENCRYPTED_FILE
         static private byte[] EncryptData(byte[] plainText, string strKey)
         {
             SymmetricAlgorithm des = Rijndael.Create();
@@ -497,6 +608,7 @@ namespace COMReservation
             fs.Close();
             return xmlDoc;
         }
+#endif
 
         static public void LoadPersonalConfig()
         {
@@ -560,6 +672,8 @@ namespace COMReservation
 
         static public void SavePersonalConfig()
         {
+            CreateDirs();
+
             XmlDocument xmlDoc = new XmlDocument();
             xmlDoc.CreateXmlDeclaration("1.0", "utf-8", null);
             XmlElement rootNode = xmlDoc.CreateElement(m_appName);
@@ -624,13 +738,20 @@ namespace COMReservation
         {
             try
             {
+#if ENABLE_ENCRYPTED_FILE
                 XmlDocument xmlDoc = LoadEncryptedXmlFile(m_globalConfigFilePath);
+#else
+                XmlDocument xmlDoc = new XmlDocument();
+                xmlDoc.Load(m_globalConfigFilePath);
+#endif
+
                 XmlNodeList nodeList = xmlDoc.SelectSingleNode(m_appName).ChildNodes;
                 foreach (XmlElement elem in nodeList)
                 {
                     if (elem.Name == "securecrt_exe_file")
                     {
                         m_secureCRTExeFilePath = elem.InnerText;
+                        m_secureCRTExeFilePath = FindAvaiableSecureCRTExePath();
                     }
                     else if (elem.Name == "history_folder")
                     {
@@ -650,6 +771,8 @@ namespace COMReservation
 
         static public void SaveGlobalConfig()
         {
+            CreateDirs();
+
             XmlDocument xmlDoc = new XmlDocument();
             xmlDoc.CreateXmlDeclaration("1.0", "utf-8", null);
             XmlElement rootNode = xmlDoc.CreateElement(m_appName);
@@ -673,8 +796,12 @@ namespace COMReservation
 
             try
             {
+#if ENABLE_ENCRYPTED_FILE
                 //xmlDoc.Save(m_globalConfigFilePath);
                 WriteEncryptedXmlFile(xmlDoc, m_globalConfigFilePath);
+#else
+                xmlDoc.Save(m_globalConfigFilePath);
+#endif
             }
             catch (Exception err)
             {

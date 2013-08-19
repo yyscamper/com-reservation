@@ -55,8 +55,10 @@
             this.label6 = new System.Windows.Forms.Label();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.label18 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
             this.btnGlobalBrowserHistoryDir = new System.Windows.Forms.Button();
+            this.tboxHistoryFolder = new System.Windows.Forms.TextBox();
             this.tboxGlobalHistoryFilePath = new System.Windows.Forms.TextBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.label14 = new System.Windows.Forms.Label();
@@ -86,8 +88,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.btnSave = new System.Windows.Forms.Button();
             this.btnCancle = new System.Windows.Forms.Button();
-            this.label18 = new System.Windows.Forms.Label();
-            this.tboxHistoryFolder = new System.Windows.Forms.TextBox();
+            this.btnRestoreDefault = new System.Windows.Forms.Button();
             this.tabAllSetting.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -366,6 +367,15 @@
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "History";
             // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Location = new System.Drawing.Point(25, 51);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(93, 17);
+            this.label18.TabIndex = 0;
+            this.label18.Text = "History Folder:";
+            // 
             // label15
             // 
             this.label15.AutoSize = true;
@@ -384,6 +394,13 @@
             this.btnGlobalBrowserHistoryDir.Text = "...";
             this.btnGlobalBrowserHistoryDir.UseVisualStyleBackColor = true;
             this.btnGlobalBrowserHistoryDir.Click += new System.EventHandler(this.btnGlobalBrowserHistoryDir_Click);
+            // 
+            // tboxHistoryFolder
+            // 
+            this.tboxHistoryFolder.Location = new System.Drawing.Point(121, 48);
+            this.tboxHistoryFolder.Name = "tboxHistoryFolder";
+            this.tboxHistoryFolder.Size = new System.Drawing.Size(410, 23);
+            this.tboxHistoryFolder.TabIndex = 1;
             // 
             // tboxGlobalHistoryFilePath
             // 
@@ -618,9 +635,9 @@
             this.labelAuthor.AutoSize = true;
             this.labelAuthor.Location = new System.Drawing.Point(89, 57);
             this.labelAuthor.Name = "labelAuthor";
-            this.labelAuthor.Size = new System.Drawing.Size(50, 17);
+            this.labelAuthor.Size = new System.Drawing.Size(70, 17);
             this.labelAuthor.TabIndex = 0;
-            this.labelAuthor.Text = "Author:";
+            this.labelAuthor.Text = "yyscamper";
             // 
             // labelVersion
             // 
@@ -652,7 +669,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("微软雅黑", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label1.Font = new System.Drawing.Font("Microsoft YaHei", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.label1.Location = new System.Drawing.Point(12, 8);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(179, 26);
@@ -682,21 +699,16 @@
             this.btnCancle.UseVisualStyleBackColor = true;
             this.btnCancle.Click += new System.EventHandler(this.btnCancle_Click);
             // 
-            // label18
+            // btnRestoreDefault
             // 
-            this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(25, 51);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(93, 17);
-            this.label18.TabIndex = 0;
-            this.label18.Text = "History Folder:";
-            // 
-            // tboxHistoryFolder
-            // 
-            this.tboxHistoryFolder.Location = new System.Drawing.Point(121, 48);
-            this.tboxHistoryFolder.Name = "tboxHistoryFolder";
-            this.tboxHistoryFolder.Size = new System.Drawing.Size(410, 23);
-            this.tboxHistoryFolder.TabIndex = 1;
+            this.btnRestoreDefault.Location = new System.Drawing.Point(8, 463);
+            this.btnRestoreDefault.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.btnRestoreDefault.Name = "btnRestoreDefault";
+            this.btnRestoreDefault.Size = new System.Drawing.Size(61, 31);
+            this.btnRestoreDefault.TabIndex = 1;
+            this.btnRestoreDefault.Text = "Default";
+            this.btnRestoreDefault.UseVisualStyleBackColor = true;
+            this.btnRestoreDefault.Click += new System.EventHandler(this.btnRestoreDefault_Click);
             // 
             // FormSetting
             // 
@@ -706,9 +718,11 @@
             this.CancelButton = this.btnCancle;
             this.ClientSize = new System.Drawing.Size(604, 497);
             this.Controls.Add(this.btnCancle);
+            this.Controls.Add(this.btnRestoreDefault);
             this.Controls.Add(this.btnSave);
             this.Controls.Add(this.tabAllSetting);
-            this.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.Font = new System.Drawing.Font("Microsoft YaHei", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "FormSetting";
             this.Text = "COM-Reservation Setting";
@@ -797,5 +811,6 @@
         private System.Windows.Forms.Button btnClearPorts;
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.TextBox tboxHistoryFolder;
+        private System.Windows.Forms.Button btnRestoreDefault;
     }
 }

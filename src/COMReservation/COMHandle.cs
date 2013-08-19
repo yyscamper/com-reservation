@@ -349,7 +349,7 @@ namespace COMReservation
 
         public bool CheckIllegal()
         {
-            if (this.ThreadCount >= 18 || (this.IsExpired && this.IsRunning))
+            if ((this.IsExpired && this.IsRunning))
             {
                 return true;
             }

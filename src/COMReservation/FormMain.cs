@@ -80,7 +80,7 @@ namespace COMReservation
             m_xpTable.FullRowSelect = true;
             m_xpTableModel.RowHeight = AppConfig.COMListRowHeight;
             m_xpTable.CellClick += new XPTable.Events.CellMouseEventHandler(xpTable_CellClick);
-            m_xpTable.CellMouseHover += new XPTable.Events.CellMouseEventHandler(xpTable_CellMouseHover);
+            //m_xpTable.CellMouseHover += new XPTable.Events.CellMouseEventHandler(xpTable_CellMouseHover);
             m_xpTable.HoverTime = 500;
 #else
             
@@ -117,20 +117,35 @@ namespace COMReservation
 
         private void xpTable_CellMouseHover(object sender, CellMouseEventArgs e)
         {
+            
             if (e.CellPos.Column == COL_PROCESS_INFO)
             {
                 uint port = uint.Parse(m_xpTable.TableModel.Rows[e.CellPos.Row].Cells[COL_PORT].Text);
                 COMItem item = COMHandle.FindCOM(port);
                 string[] fileHandles = item.FileHandles;
                 if (fileHandles == null || fileHandles.Length <= 0)
+                {
+                    statusLabelOpenedDevices.Text = "Opened COM Devices: none";
                     return;
+                }
 
+                StringBuilder sb = new StringBuilder("Opened COM Devices:");
+                for (int i = 0; i < fileHandles.Length; i++)
+                {
+                    sb.Append(fileHandles[i]);
+                    if (i < (fileHandles.Length - 1))
+                        sb.Append(", ");
+                }
+                statusLabelOpenedDevices.Text = sb.ToString();
+
+                /*
                 ContextMenuStrip hoverMenu = new ContextMenuStrip();
                 for (int i = 0; i < fileHandles.Length; i++)
                 {
                     hoverMenu.Items.Add(fileHandles[i]);
                 }
                 hoverMenu.Show(m_xpTable, m_xpTable.Location.X + m_xpTable.Width - 200, m_xpTable.Location.Y + m_xpTable.RowHeight * e.CellPos.Row - 10);
+                */
             }
         }
 
@@ -313,8 +328,11 @@ namespace COMReservation
                 }
                 AppConfig.LoadComInfo();
 
-
+                int selRow = -1;
 #if USE_XPTABLE
+                if (m_xpTable.SelectedIndicies.Length > 0)
+                    selRow = m_xpTableModel.Selections.SelectedItems[0].Index;
+
                 m_xpTableModel.Rows.Clear();
 #else
 #endif
@@ -326,6 +344,11 @@ namespace COMReservation
                         comItem.RowInTable = AddTableRow(comItem);
                         //comItem.RowInTable.EnsureVisible();
                     }
+                }
+
+                if (selRow > 0)
+                {
+                    m_xpTableModel.Selections.SelectCells(new CellPos(selRow, 0), new CellPos(selRow, m_xpColumnModel.Columns.Count - 1));
                 }
 
                 if (m_backgroundWorkerInitReady && isNeedStartBackgroundWorker)
@@ -512,7 +535,7 @@ namespace COMReservation
             listViewComTable.Width = tableWidth + 28;
 #endif
 
-            groupCOMDetail.Location = new Point(tableLocation.X + tableWidth + 40, btnSetting.Location.Y + btnSetting.Height);
+            groupCOMDetail.Location = new Point(tableLocation.X + tableWidth + 40, btnSetting.Location.Y + btnSetting.Height + 3);
             groupActionButton.Location = new Point(groupCOMDetail.Location.X, groupCOMDetail.Location.Y + groupCOMDetail.Height + 4);
             groupActionButton.Width = groupCOMDetail.Width;
 
@@ -785,14 +808,17 @@ namespace COMReservation
 
             if (item.IsAvaiable())
             {
-                btnActionSecureCRT.Enabled = false;
-                btnReserve.Enabled = true;
-                btnReserve.Text = Properties.Resources.strActionReserve;
-                btnReschedule.Enabled = false;
-
-                foreach (Control ctrl in groupCOMDetail.Controls)
+                if (!item.IsRunning)
                 {
-                    ctrl.Enabled = true;
+                    btnActionSecureCRT.Enabled = false;
+                    btnReserve.Enabled = true;
+                    btnReserve.Text = Properties.Resources.strActionReserve;
+                    btnReschedule.Enabled = false;
+
+                    foreach (Control ctrl in groupCOMDetail.Controls)
+                    {
+                        ctrl.Enabled = true;
+                    }
                 }
             }
             else
@@ -858,7 +884,24 @@ namespace COMReservation
             });
 
             cboxSessionName.Text = item.SessionName;
-            dtpExpireTime.Value = DateTime.Now + new TimeSpan(4, 0, 0);
+            //dtpExpireTime.Value = DateTime.Now + new TimeSpan(4, 0, 0);
+
+            string[] fileHandles = item.FileHandles;
+            if (fileHandles == null || fileHandles.Length <= 0)
+            {
+                statusLabelOpenedDevices.Text = "none";
+            }
+            else
+            {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < fileHandles.Length; i++)
+                {
+                    sb.Append(fileHandles[i]);
+                    if (i < (fileHandles.Length - 1))
+                        sb.Append(", ");
+                }
+                statusLabelOpenedDevices.Text = sb.ToString();
+            }
 
             RefreshSelectedComInfo();
 
@@ -1054,9 +1097,9 @@ namespace COMReservation
 
             string name = null;
             if (comboBox1.SelectedIndex == 0 || comboBox1.SelectedIndex == 1)
-                name = "Andy";
+                name = "Jobs";
             else
-                name = "Simon";
+                name = "Bill Gates";
 
             if (comboBox1.SelectedItem.ToString().StartsWith("Reserve"))
             {

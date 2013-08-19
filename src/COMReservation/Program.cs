@@ -29,11 +29,12 @@ namespace COMReservation
             }
             catch (Exception err)
             {
-                if (DialogResult.No == MessageBox.Show("Found error:" + System.Environment.NewLine
-                                + err.Message + System.Environment.NewLine + System.Environment.NewLine + "Are you sure want to continaue?", "Error", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
-                {
-                    return;
-                }
+            //    if (DialogResult.No == MessageBox.Show("Found error:" + System.Environment.NewLine
+            //                    + err.Message + System.Environment.NewLine + "It may because you are the first time to open this application."
+            //         + System.Environment.NewLine + "Are you sure want to continue?", "Error", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
+            //    {
+            //        return;
+            //    }
             }
 
             Application.Run(new FormMain());
