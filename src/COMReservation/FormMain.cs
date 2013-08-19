@@ -309,7 +309,7 @@ namespace COMReservation
                 RefreshCOMInfoWithourClear();
                 //listViewComTable.Items.Clear();
                 //listViewComTable.Items.AddRange(arrItems);
-                System.Threading.Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(10000);
             }
         }
 
@@ -638,6 +638,8 @@ namespace COMReservation
             if (comItem == null)
                 return;
 
+            this.Enabled = false;
+
             if (btn.Text == Properties.Resources.strActionReserve)
             {
                 COMHandle.Reserve(port, AppConfig.LoginUserName, ParseExpireTime(), tboxDescription.Text);
@@ -666,8 +668,9 @@ namespace COMReservation
                 comItem.RowInTable.SubItems[COL_REMAIN_TIME].Text = comItem.StrRemainTime;
 #endif
             }
-            RefreshCOMInfo();
+            RefreshCOMInfoWithourClear();
 
+            this.Enabled = true;
 
         }
 
@@ -710,7 +713,7 @@ namespace COMReservation
                 }
             }
 
-            RefreshCOMInfo();
+            RefreshCOMInfoWithourClear();
         }
 
         private void groupCOMDetail_Enter(object sender, EventArgs e)
@@ -972,6 +975,9 @@ namespace COMReservation
             if (cboxFilter.Text != Properties.Resources.strFilterAvaiable)
                 radioBtnAvaiable.Checked = false;
 
+            if (cboxFilter.Text != Properties.Resources.strFilterByAll)
+                radioBtnAllComs.Checked = false;
+
             RefreshCOMInfo();
         }
 
@@ -1076,7 +1082,9 @@ namespace COMReservation
         {
             if (DialogResult.Yes == MessageBox.Show("Are you sure want to release all the COMs that you reserved?\n", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
             {
+                this.Enabled = false;
                 COMHandle.ReleaseAllReservedByMe();
+                this.Enabled = true;
             }
         }
 
@@ -1127,6 +1135,14 @@ namespace COMReservation
 #endif
             }
             RefreshCOMInfo();
+        }
+
+        private void radioBtnAllComs_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioBtnAllComs.Checked)
+            {
+                cboxFilter.Text = Properties.Resources.strFilterByAll;
+            }
         }
     }
 }

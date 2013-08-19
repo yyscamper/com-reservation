@@ -58,6 +58,7 @@
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.btnReschedule = new System.Windows.Forms.Button();
             this.btnReleaseAll = new System.Windows.Forms.Button();
+            this.label5 = new System.Windows.Forms.Label();
             this.groupFilter = new System.Windows.Forms.GroupBox();
             this.radioBtnReservedByMe = new System.Windows.Forms.RadioButton();
             this.radioBtnAvaiable = new System.Windows.Forms.RadioButton();
@@ -73,10 +74,10 @@
             this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem7 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem8 = new System.Windows.Forms.ToolStripMenuItem();
-            this.label5 = new System.Windows.Forms.Label();
             this.statusBar = new System.Windows.Forms.StatusStrip();
-            this.statusLabelOpenedDevices = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.statusLabelOpenedDevices = new System.Windows.Forms.ToolStripStatusLabel();
+            this.radioBtnAllComs = new System.Windows.Forms.RadioButton();
             this.groupCOMDetail.SuspendLayout();
             this.groupActionButton.SuspendLayout();
             this.groupFilter.SuspendLayout();
@@ -86,7 +87,7 @@
             // 
             // btnRefresh
             // 
-            this.btnRefresh.Location = new System.Drawing.Point(469, 11);
+            this.btnRefresh.Location = new System.Drawing.Point(651, 13);
             this.btnRefresh.Margin = new System.Windows.Forms.Padding(4);
             this.btnRefresh.Name = "btnRefresh";
             this.btnRefresh.Size = new System.Drawing.Size(61, 33);
@@ -394,15 +395,27 @@
             this.btnReleaseAll.Visible = false;
             this.btnReleaseAll.Click += new System.EventHandler(this.btnReleaseAll_Click);
             // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Font = new System.Drawing.Font("Microsoft YaHei", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label5.ForeColor = System.Drawing.Color.Red;
+            this.label5.Location = new System.Drawing.Point(10, 125);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(187, 17);
+            this.label5.TabIndex = 0;
+            this.label5.Text = "Testing with Other User Name:";
+            // 
             // groupFilter
             // 
+            this.groupFilter.Controls.Add(this.radioBtnAllComs);
             this.groupFilter.Controls.Add(this.radioBtnReservedByMe);
             this.groupFilter.Controls.Add(this.radioBtnAvaiable);
             this.groupFilter.Controls.Add(this.cboxFilter);
             this.groupFilter.Controls.Add(this.labelFilter);
             this.groupFilter.Location = new System.Drawing.Point(79, 1);
             this.groupFilter.Name = "groupFilter";
-            this.groupFilter.Size = new System.Drawing.Size(383, 42);
+            this.groupFilter.Size = new System.Drawing.Size(430, 42);
             this.groupFilter.TabIndex = 7;
             this.groupFilter.TabStop = false;
             // 
@@ -433,7 +446,7 @@
             // cboxFilter
             // 
             this.cboxFilter.FormattingEnabled = true;
-            this.cboxFilter.Location = new System.Drawing.Point(258, 12);
+            this.cboxFilter.Location = new System.Drawing.Point(305, 11);
             this.cboxFilter.Name = "cboxFilter";
             this.cboxFilter.Size = new System.Drawing.Size(119, 25);
             this.cboxFilter.TabIndex = 9;
@@ -522,17 +535,6 @@
             this.toolStripMenuItem8.Size = new System.Drawing.Size(211, 22);
             this.toolStripMenuItem8.Text = "%% - percent (%)";
             // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Font = new System.Drawing.Font("Microsoft YaHei", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label5.ForeColor = System.Drawing.Color.Red;
-            this.label5.Location = new System.Drawing.Point(10, 125);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(187, 17);
-            this.label5.TabIndex = 0;
-            this.label5.Text = "Testing with Other User Name:";
-            // 
             // statusBar
             // 
             this.statusBar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -544,18 +546,30 @@
             this.statusBar.TabIndex = 8;
             this.statusBar.Text = "statusBar";
             // 
-            // statusLabelOpenedDevices
-            // 
-            this.statusLabelOpenedDevices.Name = "statusLabelOpenedDevices";
-            this.statusLabelOpenedDevices.Size = new System.Drawing.Size(31, 17);
-            this.statusLabelOpenedDevices.Text = "none";
-            // 
             // toolStripStatusLabel1
             // 
             this.toolStripStatusLabel1.Font = new System.Drawing.Font("Microsoft YaHei", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             this.toolStripStatusLabel1.Size = new System.Drawing.Size(130, 17);
             this.toolStripStatusLabel1.Text = "Opened COM Devices: ";
+            // 
+            // statusLabelOpenedDevices
+            // 
+            this.statusLabelOpenedDevices.Name = "statusLabelOpenedDevices";
+            this.statusLabelOpenedDevices.Size = new System.Drawing.Size(31, 17);
+            this.statusLabelOpenedDevices.Text = "none";
+            // 
+            // radioBtnAllComs
+            // 
+            this.radioBtnAllComs.AutoSize = true;
+            this.radioBtnAllComs.Location = new System.Drawing.Point(253, 15);
+            this.radioBtnAllComs.Name = "radioBtnAllComs";
+            this.radioBtnAllComs.Size = new System.Drawing.Size(40, 21);
+            this.radioBtnAllComs.TabIndex = 10;
+            this.radioBtnAllComs.TabStop = true;
+            this.radioBtnAllComs.Text = "All";
+            this.radioBtnAllComs.UseVisualStyleBackColor = true;
+            this.radioBtnAllComs.CheckedChanged += new System.EventHandler(this.radioBtnAllComs_CheckedChanged);
             // 
             // FormMain
             // 
@@ -643,6 +657,7 @@
         private System.Windows.Forms.StatusStrip statusBar;
         private System.Windows.Forms.ToolStripStatusLabel statusLabelOpenedDevices;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
+        private System.Windows.Forms.RadioButton radioBtnAllComs;
     }
 }
 
