@@ -237,7 +237,7 @@ namespace COMReservation
             for (uint i = (uint)nudPortStart.Value; i <= (uint)nudPortEnd.Value; i++)
             {
                 COMItem item;
-                item = COMHandle.FindCOM(i);
+                item = COMHandle.FindCom(i);
                 if (item == null)
                     item = new COMItem(i);
                 m_selectedPorts.Add(i, item);
@@ -348,7 +348,7 @@ namespace COMReservation
                 return;
             }
 
-            COMItem item = COMHandle.FindCOM(port);
+            COMItem item = COMHandle.FindCom(port);
             if (item == null)
                 item = new COMItem();
 

@@ -45,7 +45,7 @@ namespace COMReservation
             process.StartInfo.CreateNoWindow = true;
             process.Start();
 
-            com.ProcessId = process.Id;
+            com.RtProcessId = process.Id;
             AppConfig.SaveComInfo();
             return process.Id;
         }

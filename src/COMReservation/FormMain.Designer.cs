@@ -60,6 +60,7 @@
             this.btnReleaseAll = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
             this.groupFilter = new System.Windows.Forms.GroupBox();
+            this.radioBtnAllComs = new System.Windows.Forms.RadioButton();
             this.radioBtnReservedByMe = new System.Windows.Forms.RadioButton();
             this.radioBtnAvaiable = new System.Windows.Forms.RadioButton();
             this.cboxFilter = new System.Windows.Forms.ComboBox();
@@ -77,7 +78,6 @@
             this.statusBar = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.statusLabelOpenedDevices = new System.Windows.Forms.ToolStripStatusLabel();
-            this.radioBtnAllComs = new System.Windows.Forms.RadioButton();
             this.groupCOMDetail.SuspendLayout();
             this.groupActionButton.SuspendLayout();
             this.groupFilter.SuspendLayout();
@@ -294,7 +294,7 @@
             this.groupCOMDetail.Size = new System.Drawing.Size(278, 366);
             this.groupCOMDetail.TabIndex = 2;
             this.groupCOMDetail.TabStop = false;
-            this.groupCOMDetail.Enter += new System.EventHandler(this.groupCOMDetail_Enter);
+
             // 
             // cboxExpireTimeValue
             // 
@@ -419,6 +419,18 @@
             this.groupFilter.TabIndex = 7;
             this.groupFilter.TabStop = false;
             // 
+            // radioBtnAllComs
+            // 
+            this.radioBtnAllComs.AutoSize = true;
+            this.radioBtnAllComs.Location = new System.Drawing.Point(253, 15);
+            this.radioBtnAllComs.Name = "radioBtnAllComs";
+            this.radioBtnAllComs.Size = new System.Drawing.Size(40, 21);
+            this.radioBtnAllComs.TabIndex = 10;
+            this.radioBtnAllComs.TabStop = true;
+            this.radioBtnAllComs.Text = "All";
+            this.radioBtnAllComs.UseVisualStyleBackColor = true;
+            this.radioBtnAllComs.CheckedChanged += new System.EventHandler(this.radioBtnAllComs_CheckedChanged);
+            // 
             // radioBtnReservedByMe
             // 
             this.radioBtnReservedByMe.AutoSize = true;
@@ -445,12 +457,14 @@
             // 
             // cboxFilter
             // 
+            this.cboxFilter.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboxFilter.FormattingEnabled = true;
             this.cboxFilter.Location = new System.Drawing.Point(305, 11);
             this.cboxFilter.Name = "cboxFilter";
             this.cboxFilter.Size = new System.Drawing.Size(119, 25);
             this.cboxFilter.TabIndex = 9;
             this.cboxFilter.SelectedIndexChanged += new System.EventHandler(this.cboxFilter_SelectedIndexChanged);
+            this.cboxFilter.TextUpdate += new System.EventHandler(this.cboxFilter_TextUpdate);
             // 
             // labelFilter
             // 
@@ -558,18 +572,6 @@
             this.statusLabelOpenedDevices.Name = "statusLabelOpenedDevices";
             this.statusLabelOpenedDevices.Size = new System.Drawing.Size(31, 17);
             this.statusLabelOpenedDevices.Text = "none";
-            // 
-            // radioBtnAllComs
-            // 
-            this.radioBtnAllComs.AutoSize = true;
-            this.radioBtnAllComs.Location = new System.Drawing.Point(253, 15);
-            this.radioBtnAllComs.Name = "radioBtnAllComs";
-            this.radioBtnAllComs.Size = new System.Drawing.Size(40, 21);
-            this.radioBtnAllComs.TabIndex = 10;
-            this.radioBtnAllComs.TabStop = true;
-            this.radioBtnAllComs.Text = "All";
-            this.radioBtnAllComs.UseVisualStyleBackColor = true;
-            this.radioBtnAllComs.CheckedChanged += new System.EventHandler(this.radioBtnAllComs_CheckedChanged);
             // 
             // FormMain
             // 

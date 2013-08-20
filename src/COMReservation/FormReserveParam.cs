@@ -11,8 +11,6 @@ namespace COMReservation
 {
     public partial class FormReserveParam : Form
     {
-        private bool m_bComSelected = false;
-
         public FormReserveParam()
         {
             InitializeComponent();
@@ -82,7 +80,6 @@ namespace COMReservation
             cboxSessionName.Items.Add("COM" + cboxCOM.Text + "-SSP");
             cboxSessionName.Items.Add("COM" + cboxCOM.Text + "-Diag");
             cboxSessionName.Items.Add("COM" + cboxCOM.Text + "-OS");
-            m_bComSelected = true;
         }
 
         private void button1_Click(object sender, EventArgs e)

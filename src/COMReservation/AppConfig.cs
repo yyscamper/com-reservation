@@ -49,7 +49,6 @@ namespace COMReservation
 
         //Others
         private static string m_longTimeFormat = "yyyy-MM-dd HH:mm:ss";
-        private static string m_shortTimeFormat = "MM/dd hh:mm";
         private static string[] m_freqBaudrates = new string[] { "4800", "9600", "19200", "38400", "115200", "380400" };
         private static string[] m_allColorSchemes = new string[] { "Black / Cyan", "BLack / Floral White", "Floral / Dark Cyan", 
                                         "Monochrome", "Traditional", "White / Black", "Windows", "Yellow / Black" };
@@ -349,6 +348,11 @@ namespace COMReservation
 
         #region function_file_load_save
 
+        static public bool HasModificationComInfoFile()
+        {
+            return m_preComInfoFileModifyTime != File.GetLastWriteTime(m_comInfoFilePath);
+        }
+
         static public void LoadComInfo()
         {
             //XmlDocument doc = LoadEncryptedXmlFile("./encrypteddata.dat");
@@ -405,17 +409,17 @@ namespace COMReservation
                                 
                                 if (comNode.HasAttribute("process_id"))
                                 {
-                                    comItem.ProcessId = int.Parse(comNode.GetAttribute("process_id"));
+                                    comItem.RtProcessId = int.Parse(comNode.GetAttribute("process_id"));
 
-                                    if (comItem.ProcessId != COMItem.PROCESS_ID_INVALID)
+                                    if (comItem.RtProcessId != COMItem.PROCESS_ID_INVALID)
                                     {
                                         try
                                         {
-                                            Process proc = Process.GetProcessById(comItem.ProcessId);
+                                            Process proc = Process.GetProcessById(comItem.RtProcessId);
                                         }
                                         catch
                                         {
-                                            comItem.ProcessId = COMItem.PROCESS_ID_INVALID;
+                                            comItem.RtProcessId = COMItem.PROCESS_ID_INVALID;
                                             comItem.ExpireTime = DateTime.Now;
                                         }
                                     }
@@ -480,7 +484,7 @@ namespace COMReservation
                 node.SetAttribute("expire_time", comItem.ExpireTime.ToString(m_longTimeFormat));
                 node.SetAttribute("description", comItem.Description);
                 node.SetAttribute("wait_list", comItem.WaitListString);
-                node.SetAttribute("process_id", comItem.ProcessId.ToString());
+                node.SetAttribute("process_id", comItem.RtProcessId.ToString());
                 comNode.AppendChild(node);
             }
 
@@ -664,7 +668,7 @@ namespace COMReservation
 
                 }
             }
-            catch (Exception err)
+            catch
             {
                 //throw err;
             }
@@ -763,7 +767,7 @@ namespace COMReservation
                     }
                 }
             }
-            catch (Exception err)
+            catch
             {
                 //throw err;
             }

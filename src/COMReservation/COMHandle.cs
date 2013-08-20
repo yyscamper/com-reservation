@@ -39,7 +39,9 @@ namespace COMReservation
 #endif
         private int m_processId = PROCESS_ID_INVALID;
         private string          m_strBaud = "115200";
-
+        private Process         m_process = null;
+        private string[]        m_openedDeviceNames = null;
+        private string m_processInfo = string.Empty;
         public static readonly  int PROCESS_ID_INVALID = -1;
 
         private static readonly string[] PriorityStrArr = new string[] {"High", "Middle", "Low"};
@@ -138,7 +140,32 @@ namespace COMReservation
             set { m_expireTime = value; }
         }
 
-        public Process SecureCrtProcess
+        public void Update()
+        {
+            m_process = RtSecureCrtProcess;
+            if (m_process != null)
+            {
+                try
+                {
+                    m_openedDeviceNames = RtFileHandles;
+                }
+                catch
+                {
+                    m_openedDeviceNames = null;
+                }
+            }
+            else
+            {
+                m_openedDeviceNames = null;
+            }
+        }
+
+        public Process SecureProcess
+        {
+            get { return m_process; }
+        }
+
+        public Process RtSecureCrtProcess //Real Time SecureCRT Process
         {
             get 
             {
@@ -164,6 +191,11 @@ namespace COMReservation
 
         public string[] FileHandles
         {
+            get { return m_openedDeviceNames; }
+        }
+
+        public string[] RtFileHandles //Real time file handles
+        {
             get
             {
                 if (m_fileHandle != null)
@@ -180,7 +212,7 @@ namespace COMReservation
             }
         }
 
-        public int ProcessId
+        public int RtProcessId //Real time process ID
         {
             get { return m_processId; }
             set 
@@ -212,24 +244,52 @@ namespace COMReservation
 
         public int ThreadCount
         {
+            get { return (m_process == null ? 0 : m_process.Threads.Count); }
+        }
+
+        public int RtThreadCount //Real time thread count
+        {
             get
             {
                 
-                Process proc = this.SecureCrtProcess;
+                Process proc = this.RtSecureCrtProcess;
                 return (proc != null ? proc.Threads.Count : 0);
             }
         }
 
         public bool IsRunning
         {
-            get { return (this.SecureCrtProcess != null); }
+            get { return m_process != null; }
+        }
+
+        public bool RtIsRunning //Real time is Running
+        {
+            get { return (this.RtSecureCrtProcess != null); }
         }
 
         public string ProcessInfo
         {
             get
             {
-                Process proc = this.SecureCrtProcess;
+                if (m_process == null)
+                {
+                    return string.Empty;
+                }
+
+                string handleCnt = "?";
+                if (m_openedDeviceNames != null)
+                {
+                    handleCnt = m_openedDeviceNames.Length.ToString();
+                }
+                return m_process.ProcessName + " " + m_process.Id.ToString() + "(" + handleCnt + ")";
+            }
+        }
+
+        public string RtProcessInfo //Real time process info
+        {
+            get
+            {
+                Process proc = this.RtSecureCrtProcess;
                 if (proc == null)
                     return "";
                 else
@@ -349,19 +409,18 @@ namespace COMReservation
 
         public bool CheckIllegal()
         {
-            if ((this.IsExpired && this.IsRunning))
-            {
-                return true;
-            }
-            return false;
+            return (this.IsExpired && this.IsRunning);
+        }
+
+        public bool RtCheckIllegal() //Real time Check Illegal
+        {
+            return (this.IsExpired && this.RtIsRunning);
         }
     }
 
     static public class COMHandle
     {
         private static SortedList<uint, COMItem> m_allCOMs = new SortedList<uint, COMItem>();
-        private static string m_dataFilePath = "com_reservation_data.xml";
-        private static string m_historyFilePath = "com_reservation_history.xml";
         /*
         private static SortedList<uint, COMItem> m_avaiableComs = new SortedList<uint, COMItem>();
         private static SortedList<uint, COMItem> m_illegalComs = new SortedList<uint, COMItem>();
@@ -433,10 +492,10 @@ namespace COMReservation
         {
             if (item != null)
             {
-                Process proc = item.SecureCrtProcess;
+                Process proc = item.RtSecureCrtProcess;
                 if (proc != null)
                     proc.Kill();
-                item.ProcessId = COMItem.PROCESS_ID_INVALID;
+                item.RtProcessId = COMItem.PROCESS_ID_INVALID;
             }
         }
 
@@ -445,12 +504,26 @@ namespace COMReservation
 
         }
         
-        static public COMItem FindCOM(uint port)
+        static public COMItem FindCom(uint port)
         {
             if (m_allCOMs.ContainsKey(port))
                 return (COMItem)m_allCOMs[port];
             else
                 return null;
+        }
+
+        static public COMItem FindCom(string portStr)
+        {
+            uint port;
+            try
+            {
+                port = uint.Parse(portStr);
+                return FindCom(port);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         static public void Reserve(uint port, string owner, DateTime expireTime, string description)
@@ -459,7 +532,7 @@ namespace COMReservation
             {
                 return;
             }
-            COMItem comItem = FindCOM(port);
+            COMItem comItem = FindCom(port);
             if (comItem == null)
                 return;
 
@@ -473,13 +546,13 @@ namespace COMReservation
 
         static public void Release(uint port, string owner)
         {
-            COMItem comItem = FindCOM(port);
+            COMItem comItem = FindCom(port);
             if (comItem == null)
                 return;
 
             comItem.Owner = "";
             comItem.ExpireTime = DateTime.Now;
-            comItem.ProcessId = COMItem.PROCESS_ID_INVALID;
+            comItem.RtProcessId = COMItem.PROCESS_ID_INVALID;
             HistoryWritter.Write("released the COM" + port + ".");
             AppConfig.SaveComInfo();
         }

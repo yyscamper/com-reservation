@@ -27,7 +27,7 @@ namespace COMReservation
 
                 HistoryWritter.Write("open the application.");
             }
-            catch (Exception err)
+            catch
             {
             //    if (DialogResult.No == MessageBox.Show("Found error:" + System.Environment.NewLine
             //                    + err.Message + System.Environment.NewLine + "It may because you are the first time to open this application."
