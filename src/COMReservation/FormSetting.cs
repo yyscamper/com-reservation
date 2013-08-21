@@ -43,6 +43,8 @@ namespace COMReservation
             btnPersonalSelectComReservedByMeColor.BackColor = AppConfig.ColorComReservedByMeNotExpired;
             btnPersonalSelectComReservedByOtherColor.BackColor = AppConfig.ColorComReservedByOther;
 
+            nudComListRowHeight.Minimum = 1;
+            nudComListRowHeight.Maximum = 128;
             nudComListRowHeight.Value = AppConfig.COMListRowHeight;
 
             cboxColorSchemes.Text = AppConfig.CurrentColorScheme;

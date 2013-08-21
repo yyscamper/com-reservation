@@ -143,7 +143,7 @@
             this.groupBox1.Controls.Add(this.label13);
             this.groupBox1.Controls.Add(this.label17);
             this.groupBox1.Controls.Add(this.label9);
-            this.groupBox1.Location = new System.Drawing.Point(11, 141);
+            this.groupBox1.Location = new System.Drawing.Point(8, 141);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(568, 110);
             this.groupBox1.TabIndex = 4;
@@ -191,6 +191,11 @@
             this.nudComListRowHeight.Name = "nudComListRowHeight";
             this.nudComListRowHeight.Size = new System.Drawing.Size(57, 23);
             this.nudComListRowHeight.TabIndex = 2;
+            this.nudComListRowHeight.Value = new decimal(new int[] {
+            28,
+            0,
+            0,
+            0});
             this.nudComListRowHeight.ValueChanged += new System.EventHandler(this.nudComListRowHeight_ValueChanged);
             // 
             // btnPersonalSelectComReservedByMeColor
@@ -360,7 +365,7 @@
             this.groupBox4.Controls.Add(this.btnGlobalBrowserHistoryDir);
             this.groupBox4.Controls.Add(this.tboxHistoryFolder);
             this.groupBox4.Controls.Add(this.tboxGlobalHistoryFilePath);
-            this.groupBox4.Location = new System.Drawing.Point(3, 57);
+            this.groupBox4.Location = new System.Drawing.Point(6, 57);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(568, 91);
             this.groupBox4.TabIndex = 6;

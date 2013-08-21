@@ -11,59 +11,86 @@ using System.Diagnostics;
 
 namespace COMReservation
 {
-    public enum COMPriority: int
-    {
-        HIGH    = 0,
-        MIDDLE  = 1,
-        LOW     = 2
-    }
-
     public class COMItem
     {
+        private string          m_strPort;
         private uint            m_port;
         private string          m_owner = "";
-        private COMPriority     m_priority = COMPriority.LOW;
         private string          m_group = "";
         private string          m_description = "";
         private DateTime        m_expireTime;
-        private ArrayList       m_waitList = new ArrayList();
         private string          m_sessionName = "";
-        private uint            m_baud = 115200;
+        private string          m_baud = "115200";
         private int             m_index = 0;
-        private ProcessFileHandle m_fileHandle = null;
-
-#if USE_XPTABLE
+        private ProcessFileHandle   m_fileHandle = null;
         private Row             m_rowInTable = null;
-#else
-        private ListViewItem    m_rowInTable = null;
-#endif
-        private int m_processId = PROCESS_ID_INVALID;
-        private string          m_strBaud = "115200";
+        private int             m_processId = PROCESS_ID_INVALID;
         private Process         m_process = null;
         private string[]        m_openedDeviceNames = null;
-        private string m_processInfo = string.Empty;
+        private string          m_processInfo = string.Empty;
         public static readonly  int PROCESS_ID_INVALID = -1;
-
-        private static readonly string[] PriorityStrArr = new string[] {"High", "Middle", "Low"};
-
+        
         public COMItem()
         {
 
         }
 
-        public COMItem(uint port)
+        public COMItem(string port)
         {
-            m_port = port;
+            StrPort = port;
         }
 
-        public COMItem(uint port, string owner, COMPriority priority, string group, string description, DateTime expireTime)
+        public COMItem(uint port)
         {
-            m_port = port;
+            Port = port;
+        }
+
+        public COMItem(string port, string owner, string group, string description, DateTime expireTime)
+        {
+            StrPort = port;
             m_owner = owner;
-            m_priority = priority;
             m_group = group;
             m_description = description;
             m_expireTime = expireTime;
+        }
+
+        public COMItem(uint port, string owner, string group, string description, DateTime expireTime)
+        {
+            Port = port;
+            m_owner = owner;
+            m_group = group;
+            m_description = description;
+            m_expireTime = expireTime;
+        }
+
+        public string StrPort
+        {
+            get { return m_strPort; }
+            set 
+            {
+                try
+                {
+                    m_port = uint.Parse(m_strPort);
+                }
+                catch
+                {
+                    m_strPort = string.Empty;
+                    m_port = 0;
+                    return;
+                }
+
+                m_strPort = value;
+            }
+        }
+
+        public uint Port
+        {
+            get { return m_port; }
+            set
+            {
+                m_port = value;
+                m_strPort = m_port.ToString();
+            }
         }
 
         public int Index
@@ -71,11 +98,8 @@ namespace COMReservation
             get { return m_index; }
             set { m_index = value; }
         }
-#if USE_XPTABLE
+
         public Row RowInTable
-#else
-        public ListViewItem RowInTable
-#endif
         {
             get { return m_rowInTable; }
             set { m_rowInTable = value; }
@@ -87,39 +111,16 @@ namespace COMReservation
             set { m_sessionName = value; }
         }
 
-        public uint Baud
+        public string Baud
         {
             get { return m_baud; }
-            set { m_baud = value; m_strBaud = value.ToString(); }
-        }
-
-        public string StrBaud
-        {
-            get { return m_strBaud; }
-            set { m_strBaud = value; m_baud = uint.Parse(m_strBaud); }
-        }
-
-        public uint Port
-        {
-            get { return m_port; }
-            set { m_port = value; }
+            set { m_baud = value; }
         }
 
         public string Owner
         {
             get { return m_owner; }
             set { m_owner = value; }
-        }
-
-        public COMPriority Priority
-        {
-            get { return m_priority; }
-            set { m_priority = value; }
-        }
-
-        public string PriorityString
-        {
-            get { return PriorityStrArr[(int)m_priority]; }
         }
 
         public string Group
@@ -160,7 +161,7 @@ namespace COMReservation
             }
         }
 
-        public Process SecureProcess
+        public Process SecureCrtProcess
         {
             get { return m_process; }
         }
@@ -242,21 +243,6 @@ namespace COMReservation
             }
         }
 
-        public int ThreadCount
-        {
-            get { return (m_process == null ? 0 : m_process.Threads.Count); }
-        }
-
-        public int RtThreadCount //Real time thread count
-        {
-            get
-            {
-                
-                Process proc = this.RtSecureCrtProcess;
-                return (proc != null ? proc.Threads.Count : 0);
-            }
-        }
-
         public bool IsRunning
         {
             get { return m_process != null; }
@@ -330,8 +316,8 @@ namespace COMReservation
             { 
                 if (DateTime.Now >= m_expireTime)
                 {
-                    return "00 00:00:00";
-                    //return "";
+                    //return "00 00:00:00";
+                    return string.Empty;
                 }
                 else
                 {
@@ -344,67 +330,6 @@ namespace COMReservation
         public bool IsExpired
         {
             get { return (m_expireTime <= DateTime.Now); }
-        }
-
-        public string WaitListString
-        {
-            get { return GetWaitListString(); }
-            set
-            {
-                string[] strArr = value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (string str in strArr)
-                {
-                    m_waitList.Add(str);
-                }
-            }
-        }
-
-        public string GetWaitListString()
-        {
-            if (m_waitList.Count == 0)
-                return string.Empty;
-
-            StringBuilder strb = new StringBuilder();
-            foreach (string str in m_waitList)
-            {
-                strb.Append(str);
-                strb.Append(',');
-            }
-            strb.Remove(strb.Length - 1, 1);
-            return strb.ToString();
-        }
-
-        public bool AddWait(string userName)
-        {
-            if (m_waitList.Contains(userName) || m_waitList.Count >= 10)
-                return false;
-
-            m_waitList.Add(userName);
-
-            return true;
-        }
-
-        public bool ContainsWait(string userName)
-        {
-            return m_waitList.Contains(userName);
-        }
-
-        public bool DeleteWait(string userName)
-        {
-            if (m_waitList.Contains(userName))
-                m_waitList.Remove(userName);
-
-            return true;
-        }
-
-        public void ClearWait()
-        {
-            m_waitList.Clear();
-        }
-
-        public bool ContainWait(string name)
-        {
-            return m_waitList.Contains(name);
         }
 
         public bool CheckIllegal()
@@ -421,14 +346,6 @@ namespace COMReservation
     static public class COMHandle
     {
         private static SortedList<uint, COMItem> m_allCOMs = new SortedList<uint, COMItem>();
-        /*
-        private static SortedList<uint, COMItem> m_avaiableComs = new SortedList<uint, COMItem>();
-        private static SortedList<uint, COMItem> m_illegalComs = new SortedList<uint, COMItem>();
-        private static SortedList<uint, COMItem> m_reservedByMeComs = new SortedList<uint,COMItem>();
-        private static SortedList<uint, COMItem> m_reservedByOtherComs = new SortedList<uint, COMItem>();
-        private static SortedList<uint, COMItem> m_expiredComs = new SortedList<uint, COMItem>();
-        private static SortedList<uint, COMItem> m_runningComs = new SortedList<uint, COMItem>();
-        */
 
         static public SortedList<uint, COMItem> AllCOMs
         {

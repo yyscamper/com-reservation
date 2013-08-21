@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Diagnostics;
+using System.IO.Ports;
 
 namespace COMReservation
 {
@@ -18,6 +19,22 @@ namespace COMReservation
         /// <returns> The process ID</returns>
         public static int Open(string strSessionName, COMItem com, bool createInTab)
         {
+            if (com == null)
+                return COMItem.PROCESS_ID_INVALID;
+
+            try
+            {
+                SerialPort serial = new SerialPort("COM" + com.Port);
+                if (serial.IsOpen)
+                {
+                    throw new InvalidOperationException("Access is denied! The COM" + com.Port + " has been opened in other application.");
+                }
+            }
+            catch (Exception err)
+            {
+                throw err;
+            }
+
             if (!File.Exists(AppConfig.SecureCRTExeFilePath))
             {
                 throw new Exception("Cannot find the SecureCRT.exe."); 

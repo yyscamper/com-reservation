@@ -391,21 +391,17 @@ namespace COMReservation
                                 comItem.Port = port;
                                 comItem.Owner = comNode.GetAttribute("owner");
                                 comItem.Group = comNode.GetAttribute("group");
-                                comItem.Priority = (COMPriority)int.Parse(comNode.GetAttribute("priority"));
                                 comItem.Description = comNode.GetAttribute("description");
-                                comItem.WaitListString = comNode.GetAttribute("wait_list");
                                 if (comNode.HasAttribute("expire_time"))
                                     comItem.ExpireTime = DateTime.ParseExact(comNode.GetAttribute("expire_time"),
                                                             m_longTimeFormat, null, System.Globalization.DateTimeStyles.AllowInnerWhite);
                                 
                                 if (comNode.HasAttribute("session_name"))
-                                {
                                     comItem.SessionName = comNode.GetAttribute("session_name");
-                                }
                                 if (comItem.SessionName.Trim().Length == 0)
-                                {
                                     comItem.SessionName = "Serial-COM" + port;
-                                }
+                                if (comNode.HasAttribute("baud"))
+                                    comItem.Baud = comNode.GetAttribute("baud");
                                 
                                 if (comNode.HasAttribute("process_id"))
                                 {
@@ -479,12 +475,11 @@ namespace COMReservation
                 node.SetAttribute("owner", comItem.Owner);
                 node.SetAttribute("session_name", comItem.SessionName);
                 node.SetAttribute("group", comItem.Group);
-                node.SetAttribute("priority", ((int)(comItem.Priority)).ToString());
                 string ttest = comItem.ExpireTime.ToString(m_longTimeFormat);
                 node.SetAttribute("expire_time", comItem.ExpireTime.ToString(m_longTimeFormat));
                 node.SetAttribute("description", comItem.Description);
-                node.SetAttribute("wait_list", comItem.WaitListString);
                 node.SetAttribute("process_id", comItem.RtProcessId.ToString());
+                node.SetAttribute("baud", comItem.Baud);
                 comNode.AppendChild(node);
             }
 
