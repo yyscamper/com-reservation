@@ -32,7 +32,11 @@ namespace COMReservation
         private bool m_pauseBackgroundWorkFlag = false; //The flag to pause background worker
         private bool m_pauseBackgroundWorkDone = false; //Inidiate whether the background worker has done pause
         private bool m_backgroundWorkerInitReady = false; //Inidiate whether the background worker has been initialized
-        
+
+        BackgroundWorker m_bgkWorkerUpdateProcessInfo = null;
+        private bool m_updaetProcessInfoBegin = true;
+        private bool m_updateProcessInfoDone = false;
+
         //XPTable components
         private TableModel  m_xpTableModel;
         private ColumnModel m_xpColumnModel;
@@ -69,7 +73,7 @@ namespace COMReservation
             m_xpTable.HeaderRenderer = headRen;
             this.Controls.Add(m_xpTable);
             string[] colNames = new string[] {"Port", "Owner", "Baud", "Remain Time", "Description", "Process"};
-            int[]    colWidths = new int[]   {    40,      80,     60,            90,           240,      240 };
+            int[]    colWidths = new int[]   {    40,      160,     60,            90,           180,      200 };
             for (int i = 0; i < colNames.Length; i++)
             {
                 m_xpColumnModel.Columns.Add(new TextColumn(colNames[i], colWidths[i]));
@@ -125,6 +129,11 @@ namespace COMReservation
             m_bgkWorker.RunWorkerAsync();
             m_bgkWorker.WorkerSupportsCancellation = true;
             m_backgroundWorkerInitReady = true;
+
+            m_bgkWorkerUpdateProcessInfo = new BackgroundWorker();
+            m_bgkWorkerUpdateProcessInfo.DoWork += new DoWorkEventHandler(BackgroudUpdateProcessInfo);
+            m_bgkWorkerUpdateProcessInfo.RunWorkerAsync();
+            m_bgkWorkerUpdateProcessInfo.WorkerSupportsCancellation = true;
         }
 
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
@@ -175,6 +184,36 @@ namespace COMReservation
         #endregion
 
         #region background_worker
+        
+        private void BackgroudUpdateProcessInfo(object sender, DoWorkEventArgs arg)
+        {
+            while (true)
+            {
+                /*while(!m_updaetProcessInfoBegin)
+                {
+                    System.Threading.Thread.Sleep(100);
+                }*/
+
+               // m_updateProcessInfoDone = false;
+               // m_updaetProcessInfoBegin = false;
+
+                for (int r = 0; r < m_xpTableModel.Rows.Count; r++)
+                {
+                    Row viewRow = m_xpTableModel.Rows[r];
+
+                    //Find the specified COMItem for the row
+                    COMItem comItem = COMHandle.FindCom(viewRow.Cells[COL_PORT].Text);
+                    if (comItem == null)
+                        continue;
+
+                    comItem.Update(); //Update COM info
+                }
+
+                //m_updateProcessInfoDone = true;
+
+                System.Threading.Thread.Sleep(200);
+            }
+        }
 
         private void BackgroudUpdateView(object sender, DoWorkEventArgs arg)
         {
@@ -208,7 +247,7 @@ namespace COMReservation
                     if (comItem == null)
                         continue;
 
-                    comItem.Update(); //Update COM info
+                    //comItem.Update(); //Update COM info
 
                     //Automatically release the port if time expired and no process is opened
                     if (!comItem.IsAvaiable() && comItem.IsExpired && !comItem.IsRunning)
@@ -237,7 +276,7 @@ namespace COMReservation
             if (comItem == null)
                 return;
 
-            comItem.Update();
+            //comItem.Update();
             OnSelectCom(comItem);
             RefreshSelectedComInfo();
             //CellPos startCellPos = new CellPos(selIndex, 0);
@@ -261,7 +300,7 @@ namespace COMReservation
                 rowBackColor = AppConfig.ColorComIllegal;
             else if (comItem.IsAvaiable())
                 rowBackColor = AppConfig.ColorComAvaiable;
-            else if (comItem.Owner == AppConfig.LoginUserName)
+            else if (comItem.Owner == AppConfig.LoginUserFullName)
                 rowBackColor = AppConfig.ColorComReservedByMeNotExpired;
             else
                 rowBackColor = AppConfig.ColorComReservedByOther;
@@ -343,7 +382,7 @@ namespace COMReservation
             }
             else
             {
-                if (AppConfig.LoginUserName == item.Owner)
+                if (AppConfig.LoginUserFullName == item.Owner)
                 {
                     btnActionSecureCRT.Enabled = true;
                     btnReserve.Enabled = true;
@@ -393,7 +432,7 @@ namespace COMReservation
             cboxSessionName.Items.Clear();
             cboxSessionName.Items.AddRange(new string[] {
                 "Serial-COM" + item.Port,
-                AppConfig.LoginUserName + "-COM" + item.Port,
+                AppConfig.LoginUserFullName + "-COM" + item.Port,
                 "BMC-COM" + item.Port,
                 "BIOS-COM" + item.Port,
                 "POST-COM" + item.Port,
@@ -402,24 +441,24 @@ namespace COMReservation
                 "COM" + item.Port + "-BIOS",
                 "COM" + item.Port + "-POST",
                 "COM" + item.Port + "-SSP",
-                "COM" + item.Port + "-" + AppConfig.LoginUserName
+                "COM" + item.Port + "-" + AppConfig.LoginUserFullName
             });
 
             cboxSessionName.Text = item.SessionName;
             //dtpExpireTime.Value = DateTime.Now + new TimeSpan(4, 0, 0);
 
-            string[] fileHandles = item.FileHandles;
-            if (fileHandles == null || fileHandles.Length <= 0)
+            string[] procPorts = item.ProcessOpenedPorts;
+            if (procPorts == null || procPorts.Length <= 0)
             {
                 statusLabelOpenedDevices.Text = "none";
             }
             else
             {
                 StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < fileHandles.Length; i++)
+                for (int i = 0; i < procPorts.Length; i++)
                 {
-                    sb.Append(fileHandles[i]);
-                    if (i < (fileHandles.Length - 1))
+                    sb.Append("COM" + procPorts[i]);
+                    if (i < (procPorts.Length - 1))
                         sb.Append(", ");
                 }
                 statusLabelOpenedDevices.Text = sb.ToString();
@@ -543,12 +582,12 @@ namespace COMReservation
                 return true;
             }
             else if (str == Properties.Resources.strFilterReservedByMe
-                && item.Owner == AppConfig.LoginUserName)
+                && item.Owner == AppConfig.LoginUserFullName)
             {
                 return true;
             }
             else if (str == Properties.Resources.strFilterReservedByOthers
-                && item.Owner.Length > 0 && item.Owner != AppConfig.LoginUserName)
+                && item.Owner.Length > 0 && item.Owner != AppConfig.LoginUserFullName)
             {
                 return true;
             }
@@ -595,13 +634,13 @@ namespace COMReservation
 
             if (btn.Text == Properties.Resources.strActionReserve)
             {
-                COMHandle.Reserve(comItem.Port, AppConfig.LoginUserName, ParseExpireTime(), tboxDescription.Text);
+                COMHandle.Reserve(comItem.Port, AppConfig.LoginUserFullName, ParseExpireTime(), tboxDescription.Text);
                 btnActionSecureCRT.Enabled = true;
                 btnActionSecureCRT.Text = Properties.Resources.strActionSecureCrtOpen;
             }
             else
             {
-                if (comItem.Owner == AppConfig.LoginUserName)
+                if (comItem.Owner == AppConfig.LoginUserFullName)
                 {
                     if (comItem.IsRunning)
                     {
@@ -609,7 +648,7 @@ namespace COMReservation
                         this.Enabled = true;
                         return;
                     }
-                    COMHandle.Release(comItem.Port, AppConfig.LoginUserName);
+                    COMHandle.Release(comItem.Port, AppConfig.LoginUserFullName);
                     btnActionSecureCRT.Enabled = false;
                 }
             }
@@ -663,7 +702,17 @@ namespace COMReservation
             if (DialogResult.Yes == MessageBox.Show("Are you sure want to release all the COMs that you reserved?\n", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
             {
                 this.Enabled = false;
-                COMHandle.ReleaseAllReservedByMe();
+                try
+                {
+                    COMHandle.ReleaseAllReservedByMe();
+                }
+                catch (Exception err)
+                {
+                    Utility.ShowErrorDialog(err.Message);
+                    this.Enabled = true;
+                    return;
+                }
+                
                 this.Enabled = true;
             }
         }
@@ -797,7 +846,14 @@ namespace COMReservation
             }
             else
             {
-                COMHandle.Release(item.Port, name);
+                try
+                {
+                    COMHandle.Release(item.Port, name);
+                }
+                catch (Exception err)
+                {
+                    Utility.ShowErrorDialog(err.Message);
+                }
             }
 
             AppConfig.SaveComInfo();

@@ -27,6 +27,7 @@ namespace COMReservation
         private int             m_processId = PROCESS_ID_INVALID;
         private Process         m_process = null;
         private string[]        m_openedDeviceNames = null;
+        private string[]        m_procOpenedPorts = null;
         private string          m_processInfo = string.Empty;
         public static readonly  int PROCESS_ID_INVALID = -1;
         
@@ -149,15 +150,18 @@ namespace COMReservation
                 try
                 {
                     m_openedDeviceNames = RtFileHandles;
+                    m_procOpenedPorts = DeviceMapTable.GetOpenedPort(m_openedDeviceNames);
                 }
                 catch
                 {
                     m_openedDeviceNames = null;
+                    m_procOpenedPorts = null;
                 }
             }
             else
             {
                 m_openedDeviceNames = null;
+                m_procOpenedPorts = null;
             }
         }
 
@@ -193,6 +197,11 @@ namespace COMReservation
         public string[] FileHandles
         {
             get { return m_openedDeviceNames; }
+        }
+
+        public string[] ProcessOpenedPorts
+        {
+            get { return m_procOpenedPorts; }
         }
 
         public string[] RtFileHandles //Real time file handles
@@ -334,7 +343,25 @@ namespace COMReservation
 
         public bool CheckIllegal()
         {
-            return (this.IsExpired && this.IsRunning);
+            if (this.IsExpired && this.IsRunning)
+                return true;
+
+            if (this.IsRunning && m_procOpenedPorts != null)
+            {
+                foreach (string port in m_procOpenedPorts)
+                {
+                    COMItem item = COMHandle.FindCom(port);
+                    if (item == null)
+                        return true;
+
+                    if (item.Owner != Utility.GetProcessOwner(m_processId))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         public bool RtCheckIllegal() //Real time Check Illegal
@@ -364,7 +391,7 @@ namespace COMReservation
                 int cnt = 0;
                 foreach (COMItem item in m_allCOMs.Values)
                 {
-                    if (item.Owner == AppConfig.LoginUserName)
+                    if (item.Owner == AppConfig.LoginUserFullName)
                     {
                         cnt++;
                     }
@@ -467,6 +494,11 @@ namespace COMReservation
             if (comItem == null)
                 return;
 
+            if (comItem.IsRunning)
+            {
+                throw new Exception("You should kill/close the process that open the COM" + port.ToString() + " before release it!");
+            }
+
             comItem.Owner = "";
             comItem.ExpireTime = DateTime.Now;
             comItem.RtProcessId = COMItem.PROCESS_ID_INVALID;
@@ -477,18 +509,12 @@ namespace COMReservation
         static public void ReleaseAllReservedByMe()
         {
             HistoryWritter.Write("try to release all COMs that reserved by me.");
-            try
+            foreach (COMItem item in m_allCOMs.Values)
             {
-                foreach (COMItem item in m_allCOMs.Values)
-                {
-                    if (item.Owner == AppConfig.LoginUserName)
-                        Release(item.Port, item.Owner);
-                }
+                if (item.Owner == AppConfig.LoginUserFullName)
+                    Release(item.Port, item.Owner);
             }
-            catch
-            {
-            }
-        }
+    }
 
         /*
         static public void Classify()

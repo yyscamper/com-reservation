@@ -54,6 +54,11 @@
             this.label7 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.btnRebuildMapTable = new System.Windows.Forms.Button();
+            this.label20 = new System.Windows.Forms.Label();
+            this.btnBrowserMapTableFile = new System.Windows.Forms.Button();
+            this.tboxDeviceMapFilePath = new System.Windows.Forms.TextBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.label18 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
@@ -95,6 +100,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.nudComListRowHeight)).BeginInit();
             this.groupBox2.SuspendLayout();
             this.tabPage2.SuspendLayout();
+            this.groupBox6.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.tabPage3.SuspendLayout();
@@ -347,6 +353,7 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.groupBox6);
             this.tabPage2.Controls.Add(this.groupBox4);
             this.tabPage2.Controls.Add(this.groupBox3);
             this.tabPage2.Location = new System.Drawing.Point(4, 26);
@@ -357,6 +364,55 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Global";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // groupBox6
+            // 
+            this.groupBox6.Controls.Add(this.btnRebuildMapTable);
+            this.groupBox6.Controls.Add(this.label20);
+            this.groupBox6.Controls.Add(this.btnBrowserMapTableFile);
+            this.groupBox6.Controls.Add(this.tboxDeviceMapFilePath);
+            this.groupBox6.Location = new System.Drawing.Point(6, 154);
+            this.groupBox6.Name = "groupBox6";
+            this.groupBox6.Size = new System.Drawing.Size(568, 105);
+            this.groupBox6.TabIndex = 6;
+            this.groupBox6.TabStop = false;
+            this.groupBox6.Text = "Serial Device Mapping Table";
+            // 
+            // btnRebuildMapTable
+            // 
+            this.btnRebuildMapTable.Location = new System.Drawing.Point(458, 56);
+            this.btnRebuildMapTable.Name = "btnRebuildMapTable";
+            this.btnRebuildMapTable.Size = new System.Drawing.Size(103, 37);
+            this.btnRebuildMapTable.TabIndex = 7;
+            this.btnRebuildMapTable.Text = "Re-Build Table";
+            this.btnRebuildMapTable.UseVisualStyleBackColor = true;
+            this.btnRebuildMapTable.Click += new System.EventHandler(this.btnRebuildMapTable_Click);
+            // 
+            // label20
+            // 
+            this.label20.AutoSize = true;
+            this.label20.Location = new System.Drawing.Point(6, 27);
+            this.label20.Name = "label20";
+            this.label20.Size = new System.Drawing.Size(66, 17);
+            this.label20.TabIndex = 0;
+            this.label20.Text = "Table File:";
+            // 
+            // btnBrowserMapTableFile
+            // 
+            this.btnBrowserMapTableFile.Location = new System.Drawing.Point(536, 27);
+            this.btnBrowserMapTableFile.Name = "btnBrowserMapTableFile";
+            this.btnBrowserMapTableFile.Size = new System.Drawing.Size(25, 23);
+            this.btnBrowserMapTableFile.TabIndex = 3;
+            this.btnBrowserMapTableFile.Text = "...";
+            this.btnBrowserMapTableFile.UseVisualStyleBackColor = true;
+            this.btnBrowserMapTableFile.Click += new System.EventHandler(this.btnBrowserMapTableFile_Click);
+            // 
+            // tboxDeviceMapFilePath
+            // 
+            this.tboxDeviceMapFilePath.Location = new System.Drawing.Point(78, 27);
+            this.tboxDeviceMapFilePath.Name = "tboxDeviceMapFilePath";
+            this.tboxDeviceMapFilePath.Size = new System.Drawing.Size(453, 23);
+            this.tboxDeviceMapFilePath.TabIndex = 1;
             // 
             // groupBox4
             // 
@@ -472,11 +528,11 @@
             // 
             // btnClearPorts
             // 
-            this.btnClearPorts.Location = new System.Drawing.Point(232, 376);
+            this.btnClearPorts.Location = new System.Drawing.Point(95, 376);
             this.btnClearPorts.Name = "btnClearPorts";
-            this.btnClearPorts.Size = new System.Drawing.Size(52, 28);
+            this.btnClearPorts.Size = new System.Drawing.Size(39, 28);
             this.btnClearPorts.TabIndex = 11;
-            this.btnClearPorts.Text = "Clear";
+            this.btnClearPorts.Text = "CLR";
             this.btnClearPorts.UseVisualStyleBackColor = true;
             this.btnClearPorts.Click += new System.EventHandler(this.btnClearPorts_Click);
             // 
@@ -674,7 +730,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Microsoft YaHei", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label1.Font = new System.Drawing.Font("微软雅黑", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.label1.Location = new System.Drawing.Point(12, 8);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(179, 26);
@@ -726,7 +782,7 @@
             this.Controls.Add(this.btnRestoreDefault);
             this.Controls.Add(this.btnSave);
             this.Controls.Add(this.tabAllSetting);
-            this.Font = new System.Drawing.Font("Microsoft YaHei", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "FormSetting";
@@ -740,6 +796,8 @@
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.tabPage2.ResumeLayout(false);
+            this.groupBox6.ResumeLayout(false);
+            this.groupBox6.PerformLayout();
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
             this.groupBox3.ResumeLayout(false);
@@ -817,5 +875,10 @@
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.TextBox tboxHistoryFolder;
         private System.Windows.Forms.Button btnRestoreDefault;
+        private System.Windows.Forms.Button btnRebuildMapTable;
+        private System.Windows.Forms.GroupBox groupBox6;
+        private System.Windows.Forms.Label label20;
+        private System.Windows.Forms.Button btnBrowserMapTableFile;
+        private System.Windows.Forms.TextBox tboxDeviceMapFilePath;
     }
 }

@@ -33,6 +33,7 @@ namespace COMReservation
         private static string m_logFilePath;
         private static string m_logLineFormat;
         private static long m_historyBackupThreshold = 1024 * 1204;
+        private static string m_deviceMapFilePath;
 
         //System Environment
         private static string m_appName = "COM-Reservation";
@@ -117,6 +118,7 @@ namespace COMReservation
             m_secureCRTExeFilePath = FindAvaiableSecureCRTExePath();
             m_historyFileName = "com_history.log";
             m_historyFolder = "./history/";
+            m_deviceMapFilePath = ".\\global\\serial_devices.map";
 
             if (saveFlag)
                 SaveGlobalConfig();
@@ -160,7 +162,7 @@ namespace COMReservation
             
             m_globalConfigFilePath = "./global/com_global_config.dat";
             //m_personalConfigFilePath = System.Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\com_reservation\\com_config.xml";
-            m_personalConfigFilePath = "./personal/com_config_" + AppConfig.LoginUserName + ".dat";
+            m_personalConfigFilePath = "./personal/com_config_" + AppConfig.LoginUserName + "-" + AppConfig.LoginUserDomain + ".dat";
             
             m_comInfoFilePath = "./global/all_coms_info.dat";
 
@@ -221,6 +223,12 @@ namespace COMReservation
         {
             get { return m_portEnd; }
             set { m_portEnd = value; }
+        }
+
+        static public string DeviceMapFilePath
+        {
+            get { return m_deviceMapFilePath; }
+            set { m_deviceMapFilePath = value; }
         }
 
         static public string SecureCRTExeFilePath

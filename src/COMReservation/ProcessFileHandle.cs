@@ -52,8 +52,8 @@ namespace COMReservation
                     }
                 }
             }
-
             return handleList;
         }
+
     }
 }

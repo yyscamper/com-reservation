@@ -25,6 +25,8 @@ namespace COMReservation
                 AppConfig.LoadPersonalConfig();
                 AppConfig.LoadComInfo();
 
+                DeviceMapTable.Load(AppConfig.DeviceMapFilePath);
+
                 HistoryWritter.Write("open the application.");
             }
             catch

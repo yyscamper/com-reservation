@@ -56,6 +56,8 @@ namespace COMReservation
             tboxGlobalSecureCRTExeFilePath.ReadOnly = true;
             tboxGlobalHistoryFilePath.Text = AppConfig.HistoryFileName;
             tboxHistoryFolder.Text = AppConfig.HistoryFolder;
+            tboxDeviceMapFilePath.Text = AppConfig.DeviceMapFilePath;
+            tboxDeviceMapFilePath.ReadOnly = true;
         }
 
         private void TabComInfoInit()
@@ -121,6 +123,7 @@ namespace COMReservation
             AppConfig.SecureCRTExeFilePath = tboxGlobalSecureCRTExeFilePath.Text;
             AppConfig.HistoryFileName = tboxGlobalHistoryFilePath.Text;
             AppConfig.HistoryFolder = tboxHistoryFolder.Text;
+            AppConfig.DeviceMapFilePath = tboxDeviceMapFilePath.Text;
 
             try
             {
@@ -168,7 +171,7 @@ namespace COMReservation
         {
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.FileName = tboxGlobalSecureCRTExeFilePath.Text;
-            //ofd.Filter = "*.exe";
+            ofd.Filter = "executable  File(*.exe)|*.exe";
             if (DialogResult.OK != ofd.ShowDialog())
             {
                 return;
@@ -393,6 +396,33 @@ namespace COMReservation
             {
                 AppConfig.RestoreDefaultComInfo();
                 TabComInfoInit();
+            }
+        }
+
+        private void btnBrowserMapTableFile_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.FileName = tboxDeviceMapFilePath.Text;
+            ofd.Filter = "Map Table File(*.map)|.map";
+            if (DialogResult.OK != ofd.ShowDialog())
+            {
+                return;
+            }
+
+            tboxDeviceMapFilePath.Text = ofd.FileName;
+        }
+
+        private void btnRebuildMapTable_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ArrayList errPorts = new ArrayList();
+                DeviceMapTable.BuildTableFile(tboxDeviceMapFilePath.Text, COMHandle.AllCOMs, ref errPorts);
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("Rebuild Map File Failed! Error:" + System.Environment.NewLine + err.Message, "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
