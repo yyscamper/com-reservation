@@ -62,6 +62,25 @@ namespace COMReservation
             return strArr;
         }
 
+        public static string[] GetOpenedPort(ArrayList fileHandles)
+        {
+            if (fileHandles == null || fileHandles.Count <= 0)
+                return null;
+
+            ArrayList al = new ArrayList();
+            foreach (string handle in fileHandles)
+            {
+                if (_table.ContainsKey(handle))
+                {
+                    al.Add(_table[handle]);
+                }
+            }
+
+            string[] strArr = new string[al.Count];
+            al.CopyTo(strArr);
+            return strArr;
+        }
+
         public static void Load(string path)
         {
             try
@@ -78,6 +97,7 @@ namespace COMReservation
                         _table.Add(line.Substring(idx + 1), line.Substring(0, idx));
                     }
                 }
+                fs.Close();
             }
             catch
             {
@@ -106,6 +126,12 @@ namespace COMReservation
                 }
                 catch
                 {
+                    /*
+                    if (port >= 29 && port <= 92)
+                    {
+                        _table.Add("\\Device\\mxuport00" + (port-29).ToString("D2"), port.ToString());
+                    }
+                    */
                     errPorts.Add(port);
                 }
             }

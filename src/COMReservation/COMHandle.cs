@@ -8,6 +8,7 @@ using System.Xml;
 using XPTable.Models;
 using System.Windows.Forms;
 using System.Diagnostics;
+using System.IO.Ports;
 
 namespace COMReservation
 {
@@ -151,6 +152,24 @@ namespace COMReservation
                 {
                     m_openedDeviceNames = RtFileHandles;
                     m_procOpenedPorts = DeviceMapTable.GetOpenedPort(m_openedDeviceNames);
+                    bool foundPort = false;
+                    foreach (string sport in m_procOpenedPorts)
+                    {
+                        COMItem item = COMHandle.FindCom(sport);
+                        if (item != null)
+                        {
+                            if (!item.IsRunning)
+                                item.RtProcessId = m_processId;
+                            if (m_port.ToString() == sport)
+                                foundPort = true;
+                        }
+                    }
+                    if (!foundPort)
+                    {
+                        m_owner = "";
+                        m_processId = PROCESS_ID_INVALID;
+                        m_expireTime = new DateTime(1, 1, 1, 1, 1, 1);
+                    }
                 }
                 catch
                 {
@@ -468,6 +487,21 @@ namespace COMReservation
             {
                 return null;
             }
+        }
+
+        static public bool CheckPortFree(uint port)
+        {
+            SerialPort serial = new SerialPort("COM" + port);
+            try
+            {
+                serial.Open();
+            }
+            catch
+            {
+                return false;
+            }
+            serial.Close();
+            return true;
         }
 
         static public void Reserve(uint port, string owner, DateTime expireTime, string description)

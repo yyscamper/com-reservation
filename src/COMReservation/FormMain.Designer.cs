@@ -78,6 +78,7 @@
             this.statusBar = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.statusLabelOpenedDevices = new System.Windows.Forms.ToolStripStatusLabel();
+            this.btnSearchOwner = new System.Windows.Forms.Button();
             this.groupCOMDetail.SuspendLayout();
             this.groupActionButton.SuspendLayout();
             this.groupFilter.SuspendLayout();
@@ -345,13 +346,14 @@
             // 
             this.groupActionButton.Controls.Add(this.comboTest);
             this.groupActionButton.Controls.Add(this.btnReschedule);
+            this.groupActionButton.Controls.Add(this.btnSearchOwner);
             this.groupActionButton.Controls.Add(this.btnReleaseAll);
             this.groupActionButton.Controls.Add(this.btnReserve);
             this.groupActionButton.Controls.Add(this.btnActionSecureCRT);
             this.groupActionButton.Controls.Add(this.label5);
             this.groupActionButton.Location = new System.Drawing.Point(538, 404);
             this.groupActionButton.Name = "groupActionButton";
-            this.groupActionButton.Size = new System.Drawing.Size(278, 156);
+            this.groupActionButton.Size = new System.Drawing.Size(278, 217);
             this.groupActionButton.TabIndex = 6;
             this.groupActionButton.TabStop = false;
             // 
@@ -364,7 +366,7 @@
             "Release with Jobs",
             "Reserve with Bill Gates",
             "Release with Bill Gates"});
-            this.comboTest.Location = new System.Drawing.Point(10, 121);
+            this.comboTest.Location = new System.Drawing.Point(10, 174);
             this.comboTest.Name = "comboTest";
             this.comboTest.Size = new System.Drawing.Size(187, 25);
             this.comboTest.TabIndex = 7;
@@ -397,7 +399,7 @@
             this.label5.AutoSize = true;
             this.label5.Font = new System.Drawing.Font("Microsoft YaHei", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.label5.ForeColor = System.Drawing.Color.Red;
-            this.label5.Location = new System.Drawing.Point(10, 101);
+            this.label5.Location = new System.Drawing.Point(10, 154);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(187, 17);
             this.label5.TabIndex = 0;
@@ -570,6 +572,17 @@
             this.statusLabelOpenedDevices.Size = new System.Drawing.Size(31, 17);
             this.statusLabelOpenedDevices.Text = "none";
             // 
+            // btnSearchOwner
+            // 
+            this.btnSearchOwner.Font = new System.Drawing.Font("Microsoft YaHei", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnSearchOwner.Location = new System.Drawing.Point(5, 105);
+            this.btnSearchOwner.Name = "btnSearchOwner";
+            this.btnSearchOwner.Size = new System.Drawing.Size(129, 33);
+            this.btnSearchOwner.TabIndex = 5;
+            this.btnSearchOwner.Text = "Search Owner";
+            this.btnSearchOwner.UseVisualStyleBackColor = true;
+            this.btnSearchOwner.Click += new System.EventHandler(this.btnSearchOwner_Click);
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
@@ -655,6 +668,7 @@
         private System.Windows.Forms.ToolStripStatusLabel statusLabelOpenedDevices;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.RadioButton radioBtnAllComs;
+        private System.Windows.Forms.Button btnSearchOwner;
     }
 }
 

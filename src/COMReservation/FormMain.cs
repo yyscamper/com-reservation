@@ -634,6 +634,21 @@ namespace COMReservation
 
             if (btn.Text == Properties.Resources.strActionReserve)
             {
+                if (!COMHandle.CheckPortFree(comItem.Port))
+                {
+                    string appName = string.Empty;
+                    Process proc = null;
+                    string owner = Utility.GetPortOwner(comItem.Port.ToString(), ref appName, ref proc);
+                    if (owner != null)
+                    {
+                        Utility.ShowErrorDialog("This port has already be occupied by " + owner + " using " 
+                            + appName + " illegally (ProcessId=" + proc.Id + " ProcessName=" + proc.ProcessName + ")! please contact him/her.");
+                    }
+
+                    this.Enabled = true;
+                    return;
+                }
+
                 COMHandle.Reserve(comItem.Port, AppConfig.LoginUserFullName, ParseExpireTime(), tboxDescription.Text);
                 btnActionSecureCRT.Enabled = true;
                 btnActionSecureCRT.Text = Properties.Resources.strActionSecureCrtOpen;
@@ -665,10 +680,22 @@ namespace COMReservation
             if (item == null)
                 return;
 
+            this.Enabled = false;
+
             item.Update();
 
             if (btn.Text == Properties.Resources.strActionSecureCrtOpen)
             {
+                string appName = string.Empty;
+                Process proc = null;
+                string owner = Utility.GetPortOwner(cboxCOM.Text, ref appName, ref proc);
+                if (owner != null)
+                {
+                    Utility.ShowErrorDialog(owner + " is occuping the COM" + cboxCOM.Text + " using " + appName + "(ProcessId=" + proc.Id + " ProcessName=" + proc.ProcessName + "), you cannot open it!");
+                    this.Enabled = true;
+                    return;
+                }
+
                 try
                 {
                     SecureCRTHandle.Open(cboxSessionName.Text, item, cboxCreateInTab.Checked);
@@ -676,6 +703,7 @@ namespace COMReservation
                 catch (Exception err)
                 {
                     MessageBox.Show(err.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    this.Enabled = true;
                     return;
                 }
                 if (item.RtIsRunning)
@@ -690,11 +718,14 @@ namespace COMReservation
                 catch (Exception err)
                 {
                     MessageBox.Show(err.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    this.Enabled = true;
                     return;
                 }
                 if (!item.RtIsRunning)
                     btn.Text = Properties.Resources.strActionSecureCrtOpen;
             }
+
+            this.Enabled = true;
         }
 
         private void btnReleaseAll_Click(object sender, EventArgs e)
@@ -746,6 +777,23 @@ namespace COMReservation
             {
                 m_pauseBackgroundWorkFlag = false;
             }
+        }
+
+        private void btnSearchOwner_Click(object sender, EventArgs e)
+        {
+            this.Enabled = false;
+            string appName = string.Empty;
+            Process proc = null;
+            string owner = Utility.GetPortOwner(cboxCOM.Text, ref appName, ref proc);
+            if (owner != null)
+            {
+                Utility.ShowInfoDialog(owner + " is occuping the COM" + cboxCOM + " using " + appName + "(ProcessId=" + proc.Id + " ProcessName=" + proc.ProcessName + ")!");
+            }
+            else
+            {
+                Utility.ShowInfoDialog("Cannot find the owner of COM" + cboxCOM.Text + "!");
+            }
+            this.Enabled = true;
         }
 
         #endregion
@@ -860,5 +908,6 @@ namespace COMReservation
         }
 
         #endregion
+
     }
 }

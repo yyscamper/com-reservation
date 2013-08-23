@@ -414,6 +414,7 @@ namespace COMReservation
 
         private void btnRebuildMapTable_Click(object sender, EventArgs e)
         {
+            btnRebuildMapTable.Enabled = false;
             try
             {
                 ArrayList errPorts = new ArrayList();
@@ -423,6 +424,10 @@ namespace COMReservation
             {
                 MessageBox.Show("Rebuild Map File Failed! Error:" + System.Environment.NewLine + err.Message, "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                btnRebuildMapTable.Enabled = true;
             }
         }
     }
